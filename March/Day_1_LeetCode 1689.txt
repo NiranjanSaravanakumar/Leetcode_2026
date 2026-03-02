@@ -1,0 +1,114 @@
+# LeetCode 1689 – Partitioning Into Minimum Number Of Deci-Binary Numbers
+
+## 🧩 Problem Statement
+
+A **deci-binary number** is a number that contains only digits `0` or `1` (no leading zeros).
+
+You are given a decimal string `n`.
+
+Return the **minimum number of positive deci-binary numbers** needed so that they sum up to `n`.
+
+---
+
+## 📌 Examples
+
+### Example 1
+Input:
+n = "32"
+
+Output:
+3
+
+Explanation:
+32 = 10 + 11 + 11
+
+---
+
+### Example 2
+Input:
+n = "82734"
+
+Output:
+8
+
+---
+
+### Example 3
+Input:
+n = "27346209830709182346"
+
+Output:
+9
+
+---
+
+## 📋 Constraints
+
+- 1 <= n.length <= 10^5
+- n consists only of digits.
+- n does not contain leading zeros.
+
+---
+
+## 🔎 Key Observation
+
+Each deci-binary number can contribute **at most 1** to each digit position.
+
+If a digit in `n` is `d`, we need at least `d` deci-binary numbers stacked to form it.
+
+Therefore:
+
+Answer = maximum digit in the string
+
+---
+
+## 💡 Approach
+
+1. Traverse the string.
+2. Find the maximum digit.
+3. Return that digit as an integer.
+
+---
+
+## ⏱ Complexity
+
+Time Complexity: O(n)  
+Space Complexity: O(1)
+
+---
+
+## ✅ Java Solution
+
+```java
+// LeetCode 1689
+// Partitioning Into Minimum Number Of Deci-Binary Numbers
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+
+class Solution {
+    public int minPartitions(String n) {
+        char maxChar = '0';
+
+        for (char c : n.toCharArray()) {
+            if (c > maxChar) {
+                maxChar = c;
+            }
+        }
+
+        return maxChar - '0';
+    }
+}
+
+# LeetCode 1689
+# Time Complexity: O(n)
+# Space Complexity: O(1)
+
+class Solution:
+    def minPartitions(self, n: str) -> int:
+        max_digit = '0'
+        
+        for ch in n:
+            if ch > max_digit:
+                max_digit = ch
+        
+        return int(max_digit)
