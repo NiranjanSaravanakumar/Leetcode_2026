@@ -1,0 +1,183 @@
+# LeetCode 1536 – Minimum Swaps to Arrange a Binary Grid
+
+## 🧩 Problem Statement
+
+You are given an `n x n` binary grid.
+
+In one step, you can swap two **adjacent rows**.
+
+Return the **minimum number of swaps** needed to arrange the grid so that:
+
+For every row `i` (0-indexed), the number of trailing zeros in that row is **at least (n - i - 1)**.
+
+If it is impossible to arrange the grid, return `-1`.
+
+---
+
+## 📌 Example
+
+### Example 1
+
+Input:
+grid = [[0,0,1],
+        [1,1,0],
+        [1,0,0]]
+
+Output:
+3
+
+Explanation:
+We need:
+Row 0 → at least 2 trailing zeros  
+Row 1 → at least 1 trailing zero  
+Row 2 → at least 0 trailing zeros  
+
+Minimum swaps = 3
+
+---
+
+### Example 2
+
+Input:
+grid = [[0,1,1],
+        [1,0,1],
+        [1,1,0]]
+
+Output:
+-1
+
+Explanation:
+It is impossible to satisfy the condition.
+
+---
+
+## 📋 Constraints
+
+- 1 <= n <= 200
+- grid[i][j] is 0 or 1
+
+---
+
+## 🔎 Key Observation
+
+For each row `i`, we need:
+
+requiredZeros = n - i - 1
+
+So:
+1. Count trailing zeros for each row.
+2. For each position `i`, find a row below that has enough trailing zeros.
+3. Bubble that row upward using adjacent swaps.
+4. Count swaps.
+
+If no suitable row exists → return `-1`.
+
+---
+
+## 💡 Approach
+
+### Step 1: Count trailing zeros for each row.
+### Step 2: For each row position:
+- Find the first row below with required trailing zeros.
+- Bubble it upward.
+- Add number of swaps.
+### Step 3: Return total swaps.
+
+---
+
+## ⏱ Complexity
+
+Time Complexity: O(n²)  
+Space Complexity: O(n)
+
+---
+
+## ✅ Java Solution
+
+```java
+// LeetCode 1536
+// Time Complexity: O(n^2)
+// Space Complexity: O(n)
+
+class Solution {
+    public int minSwaps(int[][] grid) {
+        int n = grid.length;
+        int[] trailingZeros = new int[n];
+
+        // Step 1: Count trailing zeros
+        for (int i = 0; i < n; i++) {
+            int count = 0;
+            for (int j = n - 1; j >= 0; j--) {
+                if (grid[i][j] == 0) count++;
+                else break;
+            }
+            trailingZeros[i] = count;
+        }
+
+        int swaps = 0;
+
+        // Step 2: Fix each row
+        for (int i = 0; i < n; i++) {
+            int requiredZeros = n - i - 1;
+            int row = i;
+
+            while (row < n && trailingZeros[row] < requiredZeros) {
+                row++;
+            }
+
+            if (row == n) return -1;
+
+            while (row > i) {
+                int temp = trailingZeros[row];
+                trailingZeros[row] = trailingZeros[row - 1];
+                trailingZeros[row - 1] = temp;
+                swaps++;
+                row--;
+            }
+        }
+
+        return swaps;
+    }
+}
+---
+
+## ✅ Python Solution
+
+# LeetCode 1536
+# Time Complexity: O(n^2)
+# Space Complexity: O(n)
+
+class Solution:
+    def minSwaps(self, grid):
+        n = len(grid)
+        trailing_zeros = []
+
+        # Step 1: Count trailing zeros
+        for row in grid:
+            count = 0
+            for num in reversed(row):
+                if num == 0:
+                    count += 1
+                else:
+                    break
+            trailing_zeros.append(count)
+
+        swaps = 0
+
+        # Step 2: Fix each row position
+        for i in range(n):
+            required = n - i - 1
+            j = i
+
+            while j < n and trailing_zeros[j] < required:
+                j += 1
+
+            if j == n:
+                return -1
+
+            while j > i:
+                trailing_zeros[j], trailing_zeros[j - 1] = trailing_zeros[j - 1], trailing_zeros[j]
+                swaps += 1
+                j -= 1
+
+        return swaps
