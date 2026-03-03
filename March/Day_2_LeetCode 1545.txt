@@ -1,0 +1,158 @@
+Find Kth Bit in Nth Binary String
+LeetCode 1545
+
+Problem Link: Find Kth Bit in Nth Binary String on LeetCode
+
+---
+
+## PROBLEM STATEMENT
+
+We define a sequence of binary strings as follows:
+
+S1 = "0"
+Si = Si-1 + "1" + reverse(invert(Si-1))
+
+Where:
+
+* ```
+     → Concatenation  
+  ```
+
+reverse  → Reverse the string
+invert   → Replace '0' with '1' and '1' with '0'
+
+Given integers n and k, return the kth bit (1-indexed) in Sn.
+
+---
+
+## KEY OBSERVATIONS
+
+1. Length Pattern
+
+len(Sn) = 2^n - 1
+
+2. Middle Element
+
+middle = 2^(n-1)
+
+The middle element is always '1'.
+
+3. Structure Pattern
+
+Sn = Left + "1" + reverse(invert(Left))
+
+So:
+
+* If k == middle → answer is '1'
+* If k < middle → same as findKthBit(n-1, k)
+* If k > middle:
+
+  * Find mirrored index
+  * Solve recursively
+  * Invert result
+
+---
+
+OPTIMAL RECURSIVE SOLUTION
+Time Complexity: O(n)
+Space Complexity: O(n)
+----------------------
+
+JAVA SOLUTION (LeetCode Format)
+
+class Solution {
+    public char findKthBit(int n, int k) {
+    // Base case
+    if (n == 1) return '0';
+
+    int length = (1 << n) - 1;     // 2^n - 1
+    int middle = (length + 1) / 2; // 2^(n-1)
+
+    // If k is middle
+    if (k == middle) return '1';
+
+    // If k is in left half
+    if (k < middle)
+        return findKthBit(n - 1, k);
+
+    // If k is in right half
+    int mirroredIndex = length - k + 1;
+    char bit = findKthBit(n - 1, mirroredIndex);
+
+    // Invert bit
+    return bit == '0' ? '1' : '0';
+}
+```
+
+}
+
+PYTHON SOLUTION (LeetCode Format)
+
+class Solution:
+    def findKthBit(self, n: int, k: int) -> str:
+    # Base case
+    if n == 1:
+    return "0"
+
+    length = (1 << n) - 1
+    middle = (length + 1) // 2
+
+    # If k is middle
+    if k == middle:
+        return "1"
+
+    # If k is in left half
+    if k < middle:
+        return self.findKthBit(n - 1, k)
+
+    # If k is in right half
+    mirrored_index = length - k + 1
+    bit = self.findKthBit(n - 1, mirrored_index)
+
+    # Invert bit
+    return "1" if bit == "0" else "0"
+```
+
+---
+
+## WHY THIS APPROACH?
+
+Building the full string would take O(2^n) time and memory.
+
+Instead, we use:
+
+* Length formula
+* Middle element property
+* Mirror + Inversion symmetry
+
+This allows us to solve the problem efficiently without constructing the entire string.
+
+Works efficiently up to n = 20.
+
+---
+
+## EXAMPLE
+
+Input:
+n = 3
+k = 1
+
+Generated Strings:
+S1 = "0"
+S2 = "011"
+S3 = "0111001"
+
+Output:
+"0"
+
+Explanation:
+The 1st bit of "0111001" is "0".
+
+---
+
+## TAGS
+
+Recursion
+Divide and Conquer
+Binary Strings
+Simulation
