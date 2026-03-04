@@ -1,0 +1,298 @@
+# LeetCode 1582 - Special Positions in a Binary Matrix
+
+## Problem Summary
+
+A position (r, c) in a binary matrix is called **special** if:
+
+* `mat[r][c] == 1`
+* All other elements in row `r` are `0`
+* All other elements in column `c` are `0`
+
+Return the number of special positions in the matrix.
+
+---
+
+# Approaches Comparison
+
+## 📊 Complexity & Interview Guide
+
+| Approach           | Time Complexity    | Space Complexity | Use In Interview?   |
+| ------------------ | ------------------ | ---------------- | ------------------- |
+| Brute Force        | O(m * n * (m + n)) | O(1)             | Only if asked       |
+| Row + Column Count | O(m * n)           | O(m + n)         | ⭐ YES (Best Choice) |
+| Smart Row Check    | O(m * n)           | O(m)             | YES                 |
+
+---
+
+--------|-----------------|------------------|-------------------|
+| Brute Force | O(m * n * (m + n)) | O(1) | Only if asked |
+| Row + Column Count | O(m * n) | O(m + n) | ⭐ YES (Best) |
+| Smart Row Check | O(m * n) | O(m) | YES |
+
+---
+
+# 1️⃣ Brute Force Approach
+
+## Idea
+
+For every cell that contains `1`, check:
+
+* Entire row
+* Entire column
+
+If no other `1` exists → count it as special.
+
+## Java Implementation
+
+```java
+class Solution {
+
+    public boolean isSpecial(int r, int c, int[][] mat) {
+        int m = mat.length;
+        int n = mat[0].length;
+
+        // Check row
+        for (int j = 0; j < n; j++) {
+            if (j != c && mat[r][j] == 1) return false;
+        }
+
+        // Check column
+        for (int i = 0; i < m; i++) {
+            if (i != r && mat[i][c] == 1) return false;
+        }
+
+        return true;
+    }
+
+    public int numSpecial(int[][] mat) {
+        int m = mat.length;
+        int n = mat[0].length;
+        int count = 0;
+
+        for (int r = 0; r < m; r++) {
+            for (int c = 0; c < n; c++) {
+                if (mat[r][c] == 1 && isSpecial(r, c, mat)) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+}
+```
+
+## Python Implementation
+
+```python
+from typing import List
+
+class Solution:
+    
+    def isSpecial(self, r, c, mat):
+        m, n = len(mat), len(mat[0])
+        
+        # Check row
+        for j in range(n):
+            if j != c and mat[r][j] == 1:
+                return False
+        
+        # Check column
+        for i in range(m):
+            if i != r and mat[i][c] == 1:
+                return False
+        
+        return True
+
+    def numSpecial(self, mat: List[List[int]]) -> int:
+        m, n = len(mat), len(mat[0])
+        count = 0
+        
+        for r in range(m):
+            for c in range(n):
+                if mat[r][c] == 1 and self.isSpecial(r, c, mat):
+                    count += 1
+        
+        return count
+```
+
+---
+
+# 2️⃣ Row + Column Count (Best & Recommended)
+
+## Idea
+
+1. Count number of `1`s in each row.
+2. Count number of `1`s in each column.
+3. A position is special if:
+
+   * `mat[r][c] == 1`
+   * `rowCount[r] == 1`
+   * `colCount[c] == 1`
+
+## Java Implementation
+
+```java
+class Solution {
+    public int numSpecial(int[][] mat) {
+
+        int m = mat.length;
+        int n = mat[0].length;
+
+        int[] rowCount = new int[m];
+        int[] colCount = new int[n];
+
+        // Count 1s
+        for (int r = 0; r < m; r++) {
+            for (int c = 0; c < n; c++) {
+                if (mat[r][c] == 1) {
+                    rowCount[r]++;
+                    colCount[c]++;
+                }
+            }
+        }
+
+        int count = 0;
+
+        // Check special positions
+        for (int r = 0; r < m; r++) {
+            for (int c = 0; c < n; c++) {
+                if (mat[r][c] == 1 &&
+                    rowCount[r] == 1 &&
+                    colCount[c] == 1) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+}
+```
+
+## Python Implementation
+
+```python
+from typing import List
+
+class Solution:
+    def numSpecial(self, mat: List[List[int]]) -> int:
+        m, n = len(mat), len(mat[0])
+        
+        rowCount = [0] * m
+        colCount = [0] * n
+        
+        # Count 1s
+        for r in range(m):
+            for c in range(n):
+                if mat[r][c] == 1:
+                    rowCount[r] += 1
+                    colCount[c] += 1
+        
+        count = 0
+        
+        # Check special positions
+        for r in range(m):
+            for c in range(n):
+                if mat[r][c] == 1 and rowCount[r] == 1 and colCount[c] == 1:
+                    count += 1
+        
+        return count
+```
+
+---
+
+# 3️⃣ Smart Row Check Optimization
+
+## Idea
+
+* First compute row sums.
+* Only check rows where row sum == 1.
+* Then verify column sum.
+
+## Java Implementation
+
+```java
+class Solution {
+    public int numSpecial(int[][] mat) {
+
+        int m = mat.length;
+        int n = mat[0].length;
+
+        int[] rowCount = new int[m];
+
+        for (int r = 0; r < m; r++) {
+            for (int c = 0; c < n; c++) {
+                rowCount[r] += mat[r][c];
+            }
+        }
+
+        int count = 0;
+
+        for (int r = 0; r < m; r++) {
+            if (rowCount[r] == 1) {
+
+                int colIndex = -1;
+
+                for (int c = 0; c < n; c++) {
+                    if (mat[r][c] == 1) {
+                        colIndex = c;
+                        break;
+                    }
+                }
+
+                int colSum = 0;
+                for (int i = 0; i < m; i++) {
+                    colSum += mat[i][colIndex];
+                }
+
+                if (colSum == 1) count++;
+            }
+        }
+
+        return count;
+    }
+}
+```
+
+## Python Implementation
+
+```python
+from typing import List
+
+class Solution:
+    def numSpecial(self, mat: List[List[int]]) -> int:
+        m, n = len(mat), len(mat[0])
+        
+        rowCount = [sum(row) for row in mat]
+        count = 0
+        
+        for r in range(m):
+            if rowCount[r] == 1:
+                c = mat[r].index(1)
+                
+                colSum = sum(mat[i][c] for i in range(m))
+                
+                if colSum == 1:
+                    count += 1
+        
+        return count
+```
+
+---
+
+# Final Recommendation
+
+For interviews and clean code:
+
+👉 Use **Row + Column Count (Approach 2)**.
+
+It is optimal, easy to explain, and widely accepted.
+
+---
+
+✅ All solutions pass all LeetCode test cases.
+
+---
+
+Happy Coding 🚀
