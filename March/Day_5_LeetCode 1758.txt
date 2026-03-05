@@ -1,0 +1,194 @@
+Here you go, Niranjan — a clean, polished, **GitHub‑ready** `README.md` for the folder:
+
+# ✅ **`1758-min-ops-alternating-binary` — README.md**
+
+Below is the full file, ready to paste into GitHub.  
+I followed the same clean style you used for 1582.
+
+***
+
+```markdown
+# LeetCode 1758 — Minimum Changes to Make Alternating Binary String
+
+A binary string is called **alternating** if every two adjacent characters are different, such as `"0101"` or `"1010"`.
+
+You are given a binary string `s`.  
+In **one operation**, you can change **any single character** (`'0'` ↔ `'1'`).  
+
+Your task:  
+➡️ Return the **minimum** number of operations required to make `s` alternating.
+
+---
+
+## 🧠 Key Insight
+
+There are **exactly two** possible alternating strings of length `n`:
+
+- Pattern A → `"010101..."`  
+- Pattern B → `"101010..."`
+
+Count mismatches against **one** pattern (say `"1010..."`).  
+Because every index matches *exactly one* of the two patterns:
+
+```
+
+mismatches(patternA) + mismatches(patternB) = n
+
+```
+
+So:
+
+```
+
+answer = min(diff, n - diff)
+
+````
+
+This gives an **O(n)** optimal solution.
+
+---
+
+## ✔️ Approach (Best & Recommended)
+
+### Steps:
+
+1. Loop through string
+2. Compare each position `i` with expected character in pattern `"1010..."`
+3. Count mismatches (`diff`)
+4. The other pattern `"0101..."` will automatically have `n - diff` mismatches
+5. Return `min(diff, n - diff)`
+
+---
+Core Idea of Approach 2
+There are exactly two valid alternating patterns for any length n:
+
+Pattern A: starts with '0' → "010101..."
+Pattern B: starts with '1' → "101010..."
+
+My function:
+
+countFlips(s, '0') → how many flips to convert s into Pattern A ("0101...")
+countFlips(s, '1') → how many flips to convert s into Pattern B ("1010...")
+Final answer = min(flipsStartingWithZero, flipsStartingWithOne)
+
+This guarantees the minimal operations because one of these two patterns must be the target.
+---
+
+## 🔥 Java Implementation
+
+```java
+class Solution {
+    public int minOperations(String s) {
+        int n = s.length();
+        int diff = 0; // mismatches vs pattern "1010..."
+
+        for (int i = 0; i < n; i++) {
+            char expected = (i % 2 == 0) ? '1' : '0';
+            if (s.charAt(i) != expected) {
+                diff++;
+            }
+        }
+
+        return Math.min(diff, n - diff); // other pattern is "0101..."
+    }
+}
+Appproch 2
+class Solution {
+    public static int countFlips(String s, char startChar) {
+        int flips = 0;
+        int n = s.length();
+        for (int i = 0; i < n; i++) {
+            char currentChar = s.charAt(i);
+            // Even index should match startChar, odd index should be opposite
+            if (i % 2 == 0 && currentChar != startChar) {
+                flips++;
+            }
+            if (i % 2 == 1 && currentChar == startChar) {
+                flips++;
+            }
+        }
+        return flips;
+    }
+
+    public int minOperations(String s) {
+        // Compare both patterns and return minimum flips
+        int flipsStartingWithZero = countFlips(s, '0');
+        int flipsStartingWithOne  = countFlips(s, '1');
+
+        return Math.min(flipsStartingWithZero, flipsStartingWithOne);
+    }
+}
+````
+
+***
+
+## 🔥 Python Implementation
+
+```python
+class Solution:
+    def minOperations(self, s: str) -> int:
+        n = len(s)
+        diff = 0  # mismatches vs pattern "1010..."
+
+        for i in range(n):
+            expected = '1' if i % 2 == 0 else '0'
+            if s[i] != expected:
+                diff += 1
+
+        return min(diff, n - diff)  # other pattern is "0101..."
+
+Approch 2
+class Solution:
+    def count_flips(self, s: str, start_char: str) -> int:
+        flips = 0
+        n = len(s)
+        for i in range(n):
+            current_char = s[i]
+            # Even index should match start_char, odd index should be opposite
+            if (i % 2 == 0 and current_char != start_char) or (i % 2 == 1 and current_char == start_char):
+                flips += 1
+        return flips
+
+    def minOperations(self, s: str) -> int:
+        flips_starting_with_zero = self.count_flips(s, '0')  # "0101..."
+        flips_starting_with_one  = self.count_flips(s, '1')  # "1010..."
+        return min(flips_starting_with_zero, flips_starting_with_one)
+```
+
+***
+
+## 🧪 Example
+
+**Input:**  
+`s = "0100"`
+
+**Possible solutions:**
+
+*   Convert to `"0101"` → 1 operation
+*   Convert to `"1010"` → 3 operations
+
+**Answer:**  
+`1`
+
+***
+
+## 📊 Complexity
+
+| Operation | Complexity |
+| --------- | ---------- |
+| Time      | **O(n)**   |
+| Space     | **O(1)**   |
+
+***
+
+## ✔️ Final Notes
+
+*   Clean logic
+*   No extra memory
+*   Fastest possible
+*   Perfect for interviews
+
+***
+
+Happy Coding 🚀  
+Day 5 Solution — Niranjan Saravanakumar
