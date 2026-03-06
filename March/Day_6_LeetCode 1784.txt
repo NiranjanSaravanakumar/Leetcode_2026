@@ -1,0 +1,297 @@
+# LeetCode 1784 – Check if Binary String Has at Most One Segment of Ones
+
+## Problem
+
+Given a binary string `s` containing only `0` and `1`, return **true** if the string contains **at most one contiguous segment of `1`s**. Otherwise return **false**.
+
+A **segment of 1s** means consecutive `1`s without interruption by `0`.
+
+### Example
+
+```
+Input: s = "110"
+Output: true
+Explanation:
+There is only one segment of '1's → "11".
+```
+
+```
+Input: s = "1001"
+Output: false
+Explanation:
+There are two segments of '1's → "1" and "1".
+```
+
+```
+Input: s = "111111"
+Output: true
+Explanation:
+Only one continuous segment of '1's.
+```
+
+---
+
+# Test Cases
+
+| Input      | Output | Explanation              |
+| ---------- | ------ | ------------------------ |
+| `"1"`      | true   | Only one segment         |
+| `"0"`      | true   | No segment of ones       |
+| `"110"`    | true   | One continuous segment   |
+| `"111000"` | true   | One segment before zeros |
+| `"1001"`   | false  | Two separate segments    |
+| `"10101"`  | false  | Multiple segments        |
+| `"11111"`  | true   | Only one segment         |
+
+---
+
+# Approach 1 – Count Segments of `1`
+
+### Idea
+
+1. Traverse the string.
+2. Whenever we encounter `'1'`, we found the **start of a segment**.
+3. Skip all consecutive `1`s.
+4. Count how many segments appear.
+5. If segments > 1 → return `false`.
+
+### Time Complexity
+
+```
+O(n)
+```
+
+### Space Complexity
+
+```
+O(1)
+```
+
+---
+
+## Java Implementation
+
+```java
+class Solution {
+    public boolean checkOnesSegment(String s) {
+        int count = 0;
+        int i = 0;
+
+        while(i < s.length()){
+            if(s.charAt(i) == '1'){
+                count++;
+
+                if(count > 1)
+                    return false;
+
+                while(i < s.length() && s.charAt(i) == '1'){
+                    i++;
+                }
+            }
+            else{
+                i++;
+            }
+        }
+
+        return true;
+    }
+}
+```
+
+---
+
+## Python Implementation
+
+```python
+class Solution:
+    def checkOnesSegment(self, s: str) -> bool:
+        count = 0
+        i = 0
+
+        while i < len(s):
+            if s[i] == '1':
+                count += 1
+
+                if count > 1:
+                    return False
+
+                while i < len(s) and s[i] == '1':
+                    i += 1
+            else:
+                i += 1
+
+        return True
+```
+
+---
+
+# Approach 2 – Check `"01"` Pattern
+
+### Idea
+
+If there is more than one segment of `1`s, there must be a pattern:
+
+```
+1...0...1
+```
+
+This means the substring `"01"` will appear.
+
+So if `"01"` appears **after the first 1 segment**, we return false.
+
+Simplified check:
+
+```
+If "01" exists → there are multiple segments
+```
+
+But actually the correct trick is:
+
+```
+Check if "01" appears followed by another '1'
+```
+
+Better trick used in LeetCode:
+
+```
+Return "01" not followed by 1
+```
+
+Even simpler:
+
+```
+return "01" not in s.strip('0')
+```
+
+### Time Complexity
+
+```
+O(n)
+```
+
+---
+
+## Java Implementation
+
+```java
+class Solution {
+    public boolean checkOnesSegment(String s) {
+        return !s.contains("01");
+    }
+}
+```
+
+---
+
+## Python Implementation
+
+```python
+class Solution:
+    def checkOnesSegment(self, s: str) -> bool:
+        return "01" not in s
+```
+
+---
+
+# Approach 3 – First Zero Rule
+
+### Idea
+
+In a valid string:
+
+```
+111110000
+```
+
+Once we see the **first `0` after `1`s**, there should **never be another `1`**.
+
+Algorithm:
+
+1. Traverse the string.
+2. If we see `01`, check if there is another `1` later.
+3. If yes → return `false`.
+
+### Time Complexity
+
+```
+O(n)
+```
+
+---
+
+## Java Implementation
+
+```java
+class Solution {
+    public boolean checkOnesSegment(String s) {
+        boolean seenZero = false;
+
+        for(char c : s.toCharArray()){
+            if(c == '0'){
+                seenZero = true;
+            }
+            else if(seenZero){
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+```
+
+---
+
+## Python Implementation
+
+```python
+class Solution:
+    def checkOnesSegment(self, s: str) -> bool:
+        seen_zero = False
+
+        for c in s:
+            if c == '0':
+                seen_zero = True
+            elif seen_zero:
+                return False
+
+        return True
+```
+
+---
+
+# Visualization
+
+Example:
+
+```
+s = "110011"
+```
+
+Segments of 1:
+
+```
+11   11
+^^   ^^
+1    2
+```
+
+Since there are **2 segments**, output = `false`.
+
+---
+
+# Key Takeaway
+
+A valid string must look like:
+
+```
+111...11000...00
+```
+
+NOT like:
+
+```
+111000111
+```
+
+---
