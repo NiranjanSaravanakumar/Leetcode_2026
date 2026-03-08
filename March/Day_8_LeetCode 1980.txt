@@ -1,0 +1,224 @@
+# LeetCode 1980 — Find Unique Binary String
+
+## Problem
+
+Given an array of `n` **unique binary strings**, each of length `n`, return a binary string of length `n` that **does not appear** in the array.
+If multiple answers exist, return any of them.
+
+---
+
+## Example
+
+```
+Input: nums = ["01","10"]
+Output: "00"
+```
+
+```
+Input: nums = ["00","01"]
+Output: "10"
+```
+
+---
+
+# Approach 1 — Cantor Diagonal Trick
+
+## Idea
+
+Construct a new binary string by flipping the **i-th bit of the i-th string**.
+
+This guarantees the new string differs from every string in the array at least at one position.
+
+Example:
+
+```
+nums = ["01","10"]
+
+Index : 0 1
+nums[0][0] = 0 → flip → 1
+nums[1][1] = 0 → flip → 1
+
+Result = "11"
+```
+
+The result differs from:
+
+* nums[0] at index 0
+* nums[1] at index 1
+
+Therefore it **cannot be present in the list**.
+
+---
+
+## Time Complexity
+
+```
+O(n)
+```
+
+## Space Complexity
+
+```
+O(n)
+```
+
+---
+
+## Java Implementation (Approach 1)
+
+```java
+class Solution {
+    public String findDifferentBinaryString(String[] nums) {
+        StringBuilder res = new StringBuilder();
+        int n = nums.length;
+
+        for (int i = 0; i < n; i++) {
+            char bit = nums[i].charAt(i);
+            res.append(bit == '0' ? '1' : '0');
+        }
+
+        return res.toString();
+    }
+}
+```
+
+---
+
+## Python Implementation (Approach 1)
+
+```python
+class Solution:
+    def findDifferentBinaryString(self, nums):
+        res = []
+
+        for i in range(len(nums)):
+            if nums[i][i] == '0':
+                res.append('1')
+            else:
+                res.append('0')
+
+        return "".join(res)
+```
+
+---
+
+# Approach 2 — Backtracking
+
+## Idea
+
+Generate all possible binary strings of length `n` using recursion.
+
+Store all given strings in a **HashSet** for quick lookup.
+
+When a generated string is not in the set, return it.
+
+---
+
+## Time Complexity
+
+```
+O(2^n)
+```
+
+## Space Complexity
+
+```
+O(n)
+```
+
+---
+
+## Java Implementation (Approach 2)
+
+```java
+import java.util.*;
+
+class Solution {
+
+    public String findDifferentBinaryString(String[] nums) {
+        Set<String> set = new HashSet<>(Arrays.asList(nums));
+        return backtrack(nums.length, set, new StringBuilder());
+    }
+
+    private String backtrack(int n, Set<String> set, StringBuilder cur) {
+
+        if (cur.length() == n) {
+            String s = cur.toString();
+            if (!set.contains(s)) return s;
+            return null;
+        }
+
+        cur.append('0');
+        String res = backtrack(n, set, cur);
+        if (res != null) return res;
+        cur.deleteCharAt(cur.length() - 1);
+
+        cur.append('1');
+        res = backtrack(n, set, cur);
+        if (res != null) return res;
+        cur.deleteCharAt(cur.length() - 1);
+
+        return null;
+    }
+}
+```
+
+---
+
+## Python Implementation (Approach 2)
+
+```python
+class Solution:
+    def findDifferentBinaryString(self, nums):
+        n = len(nums)
+        s = set(nums)
+
+        def backtrack(cur):
+            if len(cur) == n:
+                if cur not in s:
+                    return cur
+                return None
+
+            res = backtrack(cur + "0")
+            if res:
+                return res
+
+            res = backtrack(cur + "1")
+            return res
+
+        return backtrack("")
+```
+
+---
+
+# Test Cases
+
+```
+Input: nums = ["01","10"]
+Output: "00" or "11"
+```
+
+```
+Input: nums = ["00","01"]
+Output: "10" or "11"
+```
+
+```
+Input: nums = ["111","011","001"]
+Output: "000"
+```
+
+---
+
+# Summary
+
+| Approach       | Idea                        | Time   | Space |
+| -------------- | --------------------------- | ------ | ----- |
+| Diagonal Trick | Flip nums[i][i]             | O(n)   | O(n)  |
+| Backtracking   | Generate all binary strings | O(2^n) | O(n)  |
+
+---
+
+## Recommendation
+
+Use **Approach 1 (Diagonal Trick)** because it is optimal and very elegant.
