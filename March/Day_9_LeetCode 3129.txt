@@ -1,0 +1,493 @@
+# 📌 LeetCode 3129 — Find All Possible Stable Binary Arrays I
+
+## 🧩 Problem Statement
+
+You are given three integers:
+
+* `zero` → number of `0`s
+* `one` → number of `1`s
+* `limit` → maximum number of consecutive identical elements allowed
+
+A **stable binary array** is defined as:
+
+* The array contains exactly `zero` zeros and `one` ones.
+* No more than `limit` consecutive `0`s or `1`s appear.
+
+Return the **number of stable arrays** that can be formed.
+
+Since the answer can be large, return it **modulo (10^9 + 7)**.
+
+---
+
+# 📖 Example
+
+### Example 1
+
+```
+Input:
+zero = 1
+one = 1
+limit = 2
+
+Output:
+2
+```
+
+### Explanation
+
+Possible arrays:
+
+```
+01
+10
+```
+
+Both satisfy the limit condition.
+
+---
+
+### Example 2
+
+```
+Input:
+zero = 3
+one = 1
+limit = 1
+
+Output:
+1
+```
+
+### Explanation
+
+Valid array:
+
+```
+0100
+```
+
+Any array containing `00` consecutively would violate the limit.
+
+---
+
+# 💡 Key Idea
+
+We use **Dynamic Programming**.
+
+Define:
+
+```
+dp[i][j][k]
+```
+
+Where:
+
+* `i` = number of `1`s used
+* `j` = number of `0`s used
+* `k` = last element placed
+
+```
+k = 0 → last element is 0
+k = 1 → last element is 1
+```
+
+This helps us enforce the **limit constraint**.
+
+---
+
+# 🚀 Approach 1 — Dynamic Programming
+
+### Transition
+
+If the last element is `1`, we can place `0`s:
+
+```
+dp[i][j][1] =
+dp[i][j-1][0] +
+dp[i][j-2][0] +
+...
+dp[i][j-limit][0]
+```
+
+If the last element is `0`, we can place `1`s:
+
+```
+dp[i][j][0] =
+dp[i-1][j][1] +
+dp[i-2][j][1] +
+...
+dp[i-limit][j][1]
+```
+
+---
+
+# ⏱ Complexity
+
+### Time Complexity
+
+```
+O(zero × one × limit)
+```
+
+### Space Complexity
+
+```
+O(zero × one)
+```
+
+---
+
+# 🧪 Test Cases
+
+### Test Case 1
+
+```
+Input:
+zero = 1
+one = 1
+limit = 2
+
+Output:
+2
+```
+
+---
+
+### Test Case 2
+
+```
+Input:
+zero = 2
+one = 1
+limit = 2
+
+Output:
+3
+```
+
+Arrays:
+
+```
+001
+010
+100
+```
+
+---
+
+### Test Case 3
+
+```
+Input:
+zero = 3
+one = 1
+limit = 1
+
+Output:
+1
+```
+
+---
+
+### Edge Case
+
+```
+Input:
+zero = 0
+one = 3
+limit = 2
+
+Output:
+0
+```
+
+Because `111` exceeds the limit.
+
+---
+
+# ☕ Java Implementation
+
+```java
+class Solution {
+    private static final int MOD = 1_000_000_007;
+
+    public int numberOfStableArrays(int zero, int one, int limit) {
+        int[][][] dp = new int[one + 1][zero + 1][2];
+
+        dp[0][0][0] = 1;
+        dp[0][0][1] = 1;
+
+        for (int onesLeft = 0; onesLeft <= one; onesLeft++) {
+            for (int zerosLeft = 0; zerosLeft <= zero; zerosLeft++) {
+
+                if (onesLeft == 0 && zerosLeft == 0) continue;
+
+                long ways = 0;
+
+                int maxZeros = Math.min(zerosLeft, limit);
+                for (int len = 1; len <= maxZeros; len++) {
+                    ways = (ways + dp[onesLeft][zerosLeft - len][0]) % MOD;
+                }
+                dp[onesLeft][zerosLeft][1] = (int) ways;
+
+                ways = 0;
+
+                int maxOnes = Math.min(onesLeft, limit);
+                for (int len = 1; len <= maxOnes; len++) {
+                    ways = (ways + dp[onesLeft - len][zerosLeft][1]) % MOD;
+                }
+                dp[onesLeft][zerosLeft][0] = (int) ways;
+            }
+        }
+
+        return (dp[one][zero][0] + dp[one][zero][1]) % MOD;
+    }
+}
+```
+
+---
+
+# 🐍 Python Implementation
+
+```python
+class Solution:
+    def numberOfStableArrays(self, zero: int, one: int, limit: int) -> int:
+        MOD = 10**9 + 7
+        
+        dp = [[[0]*2 for _ in range(zero+1)] for _ in range(one+1)]
+        
+        dp[0][0][0] = 1
+        dp[0][0][1] = 1
+        
+        for i in range(one+1):
+            for j in range(zero+1):
+                if i == 0 and j == 0:
+                    continue
+                
+                ways = 0
+                
+                for k in range(1, min(j, limit)+1):
+                    ways += dp[i][j-k][0]
+                
+                dp[i][j][1] = ways % MOD
+                
+                ways = 0
+                
+                for k in range(1, min(i, limit)+1):
+                    ways += dp[i-k][j][1]
+                
+                dp[i][j][0] = ways % MOD
+        
+        return (dp[one][zero][0] + dp[one][zero][1]) % MOD
+```
+
+---
+
+# 🧠 Key Takeaways
+
+* This is a **Dynamic Programming + counting problem**.
+* State tracks **remaining zeros, ones, and last element placed**.
+* Prevents more than `limit` consecutive elements.
+* Can be optimized further using **prefix sum DP**.
+
+---
+🌳 Approach 2 — Recursion + Memoization (Top-Down DP)
+💡 Idea
+
+Instead of building arrays step-by-step element by element, we place blocks of elements.
+
+Example:
+
+limit = 3
+
+We can place:
+
+0
+00
+000
+
+or
+
+1
+11
+111
+
+depending on the last element placed.
+
+So we recursively try:
+
+placing a block of 0s
+
+placing a block of 1s
+
+while respecting the limit constraint.
+
+To avoid recomputation we store results in a memo table.
+
+🧠 Recursive State
+countArrays(onesLeft, zerosLeft, lastPlaced)
+
+Where:
+
+onesLeft   → remaining 1s
+zerosLeft  → remaining 0s
+lastPlaced → last element placed
+lastPlaced = 1 → last element was 1
+lastPlaced = 0 → last element was 0
+🔁 State Transition
+Case 1 — Last element was 1
+
+We must place zeros next.
+
+for len = 1 → min(zerosLeft, limit)
+    place len zeros
+
+Transition
+
+countArrays(onesLeft, zerosLeft - len, 0)
+Case 2 — Last element was 0
+
+We must place ones next.
+
+for len = 1 → min(onesLeft, limit)
+
+Transition
+
+countArrays(onesLeft - len, zerosLeft, 1)
+🧾 Base Case
+if onesLeft == 0 AND zerosLeft == 0
+    return 1
+
+This means we formed a valid stable array.
+
+📊 Recursion Tree Example
+
+Example:
+
+zero = 2
+one = 1
+limit = 2
+start
+ ├── 0
+ │    ├── 00
+ │    │     └── 1   -> 001
+ │    └── 01        -> 010
+ │
+ └── 1
+      └── 10
+           └── 0    -> 100
+
+Valid arrays:
+
+001
+010
+100
+
+Total = 3
+
+☕ Java Implementation (Your Code)
+import java.util.Arrays;
+
+class Solution {
+
+    private static final int MOD = 1_000_000_007;
+
+    int[][][] memo = new int[201][201][2];
+
+    private int countArrays(int onesLeft, int zerosLeft, int lastPlaced, int limit) {
+
+        if (onesLeft == 0 && zerosLeft == 0) {
+            return 1;
+        }
+
+        if (memo[onesLeft][zerosLeft][lastPlaced] != -1) {
+            return memo[onesLeft][zerosLeft][lastPlaced];
+        }
+
+        long ways = 0;
+
+        if (lastPlaced == 1) {
+
+            int maxZeros = Math.min(zerosLeft, limit);
+
+            for (int len = 1; len <= maxZeros; len++) {
+                ways += countArrays(onesLeft, zerosLeft - len, 0, limit);
+                ways %= MOD;
+            }
+
+        } else {
+
+            int maxOnes = Math.min(onesLeft, limit);
+
+            for (int len = 1; len <= maxOnes; len++) {
+                ways += countArrays(onesLeft - len, zerosLeft, 1, limit);
+                ways %= MOD;
+            }
+        }
+
+        memo[onesLeft][zerosLeft][lastPlaced] = (int) ways;
+
+        return memo[onesLeft][zerosLeft][lastPlaced];
+    }
+
+    public int numberOfStableArrays(int zero, int one, int limit) {
+
+        for (int i = 0; i <= 200; i++) {
+            for (int j = 0; j <= 200; j++) {
+                Arrays.fill(memo[i][j], -1);
+            }
+        }
+
+        int startWithOne = countArrays(one, zero, 0, limit);
+        int startWithZero = countArrays(one, zero, 1, limit);
+
+        return (startWithOne + startWithZero) % MOD;
+    }
+}
+🐍 Python Version (Same Recursion)
+class Solution:
+    def numberOfStableArrays(self, zero: int, one: int, limit: int) -> int:
+
+        MOD = 10**9 + 7
+        memo = {}
+
+        def dfs(o, z, last):
+
+            if o == 0 and z == 0:
+                return 1
+
+            if (o, z, last) in memo:
+                return memo[(o, z, last)]
+
+            ways = 0
+
+            if last == 1:
+                for l in range(1, min(z, limit) + 1):
+                    ways += dfs(o, z - l, 0)
+
+            else:
+                for l in range(1, min(o, limit) + 1):
+                    ways += dfs(o - l, z, 1)
+
+            memo[(o, z, last)] = ways % MOD
+            return memo[(o, z, last)]
+
+        return (dfs(one, zero, 0) + dfs(one, zero, 1)) % MOD
+⏱ Complexity
+Time Complexity
+O(zero × one × limit)
+
+Reason:
+
+states = zero × one × 2
+each state iterates up to limit
+Space Complexity
+O(zero × one)
+
+for the memo table.
+
+✅ Advantages of This Approach
+
+✔ Very easy to understand
+✔ Natural recursive thinking
+✔ Avoids recomputation with memoization
