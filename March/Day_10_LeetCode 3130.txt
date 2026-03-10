@@ -1,0 +1,430 @@
+# LeetCode 3130 – Find All Possible Stable Binary Arrays II
+
+## Problem
+
+You are given three integers:
+
+* `zero` → number of `0`s
+* `one` → number of `1`s
+* `limit` → maximum number of consecutive identical elements allowed
+
+A **stable binary array** is an array that:
+
+1. Contains exactly `zero` number of `0`s
+2. Contains exactly `one` number of `1`s
+3. Has **no more than `limit` consecutive identical elements**
+
+Return the **number of stable binary arrays** that can be formed.
+
+Return the result **modulo 10⁹ + 7**.
+
+---
+
+# Example
+
+### Example 1
+
+Input
+
+```
+zero = 1
+one = 1
+limit = 2
+```
+
+Possible arrays
+
+```
+[0,1]
+[1,0]
+```
+
+Output
+
+```
+2
+```
+
+---
+
+### Example 2
+
+Input
+
+```
+zero = 2
+one = 1
+limit = 2
+```
+
+Possible arrays
+
+```
+[0,0,1]
+[0,1,0]
+[1,0,0]
+```
+
+Output
+
+```
+3
+```
+
+---
+
+### Example 3
+
+Input
+
+```
+zero = 3
+one = 3
+limit = 1
+```
+
+Only alternating sequences are allowed.
+
+```
+[0,1,0,1,0,1]
+[1,0,1,0,1,0]
+```
+
+Output
+
+```
+2
+```
+
+---
+
+# Constraints
+
+```
+1 <= zero, one <= 200
+1 <= limit <= 200
+```
+
+---
+
+# Larger Test Cases
+
+### Test Case 1
+
+```
+Input:
+zero = 4
+one = 5
+limit = 2
+
+Output:
+126
+```
+
+---
+
+### Test Case 2
+
+```
+Input:
+zero = 10
+one = 10
+limit = 3
+```
+
+Large number of combinations → requires **DP with optimization**.
+
+---
+
+### Test Case 3
+
+```
+Input:
+zero = 200
+one = 200
+limit = 200
+```
+
+Worst case scenario.
+Brute force is impossible.
+
+---
+
+# Key Idea
+
+We must build arrays while:
+
+* Tracking remaining `0`s
+* Tracking remaining `1`s
+* Tracking the **last placed element**
+
+Because **consecutive limit restriction exists**.
+
+---
+
+# Dynamic Programming State
+
+```
+dp[i][j][k]
+```
+
+Where
+
+```
+i = number of zeros used
+j = number of ones used
+k = last placed element
+```
+
+```
+k = 0 → array ends with 0
+k = 1 → array ends with 1
+```
+
+---
+
+# Approach 1 – Prefix Optimized DP
+
+### Idea
+
+Instead of tracking **current streak length**, we subtract invalid sequences.
+
+If we exceed `limit` consecutive elements, we remove those cases using prefix subtraction.
+
+---
+
+### Transition
+
+Ending with `0`
+
+```
+dp[i][j][0] =
+dp[i-1][j][0] + dp[i-1][j][1]
+```
+
+But if `limit` exceeded:
+
+```
+subtract dp[i-limit-1][j][1]
+```
+
+---
+
+Ending with `1`
+
+```
+dp[i][j][1] =
+dp[i][j-1][0] + dp[i][j-1][1]
+```
+
+If limit exceeded:
+
+```
+subtract dp[i][j-limit-1][0]
+```
+
+---
+
+### Time Complexity
+
+```
+O(zero × one)
+```
+
+### Space Complexity
+
+```
+O(zero × one)
+```
+
+---
+
+# Approach 1 Code
+
+## Java
+
+```java
+class Solution {
+    public int numberOfStableArrays(int zero, int one, int limit) {
+        int MOD = 1_000_000_007;
+
+        long[][][] dp = new long[zero+1][one+1][2];
+
+        for(int i=1;i<=Math.min(zero,limit);i++)
+            dp[i][0][0]=1;
+
+        for(int j=1;j<=Math.min(one,limit);j++)
+            dp[0][j][1]=1;
+
+        for(int i=1;i<=zero;i++)
+        for(int j=1;j<=one;j++){
+
+            long over0 = (i-limit>=1)?dp[i-limit-1][j][1]:0;
+            long over1 = (j-limit>=1)?dp[i][j-limit-1][0]:0;
+
+            dp[i][j][0] =
+            (dp[i-1][j][0]+dp[i-1][j][1]-over0+MOD)%MOD;
+
+            dp[i][j][1] =
+            (dp[i][j-1][0]+dp[i][j-1][1]-over1+MOD)%MOD;
+        }
+
+        return (int)((dp[zero][one][0]+dp[zero][one][1])%MOD);
+    }
+}
+```
+
+---
+
+## Python 3
+
+```python
+class Solution:
+    def numberOfStableArrays(self, zero: int, one: int, limit: int) -> int:
+        MOD = 10**9 + 7
+
+        dp = [[[0]*2 for _ in range(one+1)] for _ in range(zero+1)]
+
+        for i in range(1, min(zero, limit)+1):
+            dp[i][0][0] = 1
+
+        for j in range(1, min(one, limit)+1):
+            dp[0][j][1] = 1
+
+        for i in range(1, zero+1):
+            for j in range(1, one+1):
+
+                over0 = dp[i-limit-1][j][1] if i-limit >= 1 else 0
+                over1 = dp[i][j-limit-1][0] if j-limit >= 1 else 0
+
+                dp[i][j][0] = (
+                    dp[i-1][j][0] + dp[i-1][j][1] - over0
+                ) % MOD
+
+                dp[i][j][1] = (
+                    dp[i][j-1][0] + dp[i][j-1][1] - over1
+                ) % MOD
+
+        return (dp[zero][one][0] + dp[zero][one][1]) % MOD
+```
+
+---
+
+# Approach 2 – Alternative DP Ordering
+
+This version swaps the dimensions:
+
+```
+dp[onesLeft][zerosLeft][last]
+```
+
+Same logic but different indexing.
+
+This is also the **official editorial style solution**.
+
+---
+
+# Approach 2 Code
+
+## Java
+
+```java
+class Solution {
+    static final int MOD = 1_000_000_007;
+
+    public int numberOfStableArrays(int zero, int one, int limit) {
+
+        int[][][] dp = new int[one + 1][zero + 1][2];
+
+        for (int zerosLeft = 1; zerosLeft <= Math.min(zero, limit); zerosLeft++)
+            dp[0][zerosLeft][0] = 1;
+
+        for (int onesLeft = 1; onesLeft <= Math.min(one, limit); onesLeft++)
+            dp[onesLeft][0][1] = 1;
+
+        for (int onesLeft = 0; onesLeft <= one; onesLeft++) {
+            for (int zerosLeft = 0; zerosLeft <= zero; zerosLeft++) {
+
+                if (onesLeft == 0 || zerosLeft == 0)
+                    continue;
+
+                dp[onesLeft][zerosLeft][0] =
+                        (dp[onesLeft][zerosLeft - 1][0]
+                        + dp[onesLeft][zerosLeft - 1][1]) % MOD;
+
+                if (zerosLeft > limit)
+                    dp[onesLeft][zerosLeft][0] =
+                        (dp[onesLeft][zerosLeft][0]
+                        - dp[onesLeft][zerosLeft - 1 - limit][1]
+                        + MOD) % MOD;
+
+                dp[onesLeft][zerosLeft][1] =
+                        (dp[onesLeft - 1][zerosLeft][0]
+                        + dp[onesLeft - 1][zerosLeft][1]) % MOD;
+
+                if (onesLeft > limit)
+                    dp[onesLeft][zerosLeft][1] =
+                        (dp[onesLeft][zerosLeft][1]
+                        - dp[onesLeft - 1 - limit][zerosLeft][0]
+                        + MOD) % MOD;
+            }
+        }
+
+        return (dp[one][zero][0] + dp[one][zero][1]) % MOD;
+    }
+}
+```
+
+---
+
+## Python 3
+
+```python
+class Solution:
+    MOD = 10**9 + 7
+
+    def numberOfStableArrays(self, zero: int, one: int, limit: int) -> int:
+
+        dp = [[[0]*2 for _ in range(zero+1)] for _ in range(one+1)]
+
+        for z in range(1, min(zero, limit)+1):
+            dp[0][z][0] = 1
+
+        for o in range(1, min(one, limit)+1):
+            dp[o][0][1] = 1
+
+        for o in range(one+1):
+            for z in range(zero+1):
+
+                if o == 0 or z == 0:
+                    continue
+
+                dp[o][z][0] = (
+                    dp[o][z-1][0] + dp[o][z-1][1]
+                ) % self.MOD
+
+                if z > limit:
+                    dp[o][z][0] = (
+                        dp[o][z][0] - dp[o][z-1-limit][1]
+                    ) % self.MOD
+
+                dp[o][z][1] = (
+                    dp[o-1][z][0] + dp[o-1][z][1]
+                ) % self.MOD
+
+                if o > limit:
+                    dp[o][z][1] = (
+                        dp[o][z][1] - dp[o-1-limit][z][0]
+                    ) % self.MOD
+
+        return (dp[one][zero][0] + dp[one][zero][1]) % self.MOD
+```
+
+---
+
+# Summary
+
+| Approach            | Idea                               | Time  | Space |
+| ------------------- | ---------------------------------- | ----- | ----- |
+| Prefix Optimized DP | Remove invalid streaks             | O(n²) | O(n²) |
+| Editorial DP        | Same logic with different indexing | O(n²) | O(n²) |.
