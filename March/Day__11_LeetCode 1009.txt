@@ -1,0 +1,422 @@
+# LeetCode 1009 — Number Complement
+
+## Problem
+
+Given a **positive integer `n`**, return its **bitwise complement**.
+
+The **complement** of an integer is obtained by **flipping all bits in its binary representation**, **only up to the highest set bit**.
+
+Leading zeros are **not included**.
+
+---
+
+## Example
+
+### Example 1
+
+Input
+
+```
+n = 5
+```
+
+Binary
+
+```
+5 = 101
+```
+
+Flip bits
+
+```
+010
+```
+
+Output
+
+```
+2
+```
+
+---
+
+### Example 2
+
+Input
+
+```
+n = 1
+```
+
+Binary
+
+```
+1 = 1
+```
+
+Flip
+
+```
+0
+```
+
+Output
+
+```
+0
+```
+
+---
+
+## Constraints
+
+```
+0 <= n < 2^31
+```
+
+---
+
+# Test Cases
+
+| Input | Binary | Complement | Output |
+| ----- | ------ | ---------- | ------ |
+| 5     | 101    | 010        | 2      |
+| 1     | 1      | 0          | 0      |
+| 0     | 0      | 1          | 1      |
+| 10    | 1010   | 0101       | 5      |
+| 7     | 111    | 000        | 0      |
+
+---
+
+# Hidden Edge Test Cases
+
+These are cases often used internally in judges.
+
+```
+n = 0
+n = 1
+n = 2
+n = 1023
+n = 2147483647
+```
+
+Important edge case:
+
+```
+n = 0 → answer = 1
+```
+
+Because
+
+```
+0 = 0
+complement = 1
+```
+
+---
+
+# Key Idea
+
+We only flip bits **until the most significant bit (MSB)**.
+
+Example:
+
+```
+n = 5
+
+Binary = 101
+Mask   = 111
+Result = 101 ^ 111
+       = 010
+```
+
+---
+
+# Approach 1 — Bit Mask (Most Common)
+
+Create a mask like:
+
+```
+111... (same length as n)
+```
+
+Then XOR.
+
+### Java
+
+```java
+class Solution {
+    public int bitwiseComplement(int n) {
+        if (n == 0) return 1;
+
+        int mask = 1;
+
+        while (mask <= n) {
+            mask <<= 1;
+        }
+
+        return (mask - 1) ^ n;
+    }
+}
+```
+
+### Python
+
+```python
+class Solution:
+    def bitwiseComplement(self, n: int) -> int:
+        if n == 0:
+            return 1
+
+        mask = 1
+        while mask <= n:
+            mask <<= 1
+
+        return (mask - 1) ^ n
+```
+
+Time Complexity
+
+```
+O(log n)
+```
+
+Space Complexity
+
+```
+O(1)
+```
+
+---
+
+# Approach 2 — String Bit Flip
+
+Convert number to **binary string**, flip bits, convert back.
+
+### Java
+
+```java
+class Solution {
+    public int bitwiseComplement(int n) {
+        if (n == 0) return 1;
+
+        String bin = Integer.toBinaryString(n);
+        StringBuilder sb = new StringBuilder();
+
+        for (char c : bin.toCharArray()) {
+            if (c == '0') sb.append('1');
+            else sb.append('0');
+        }
+
+        return Integer.parseInt(sb.toString(), 2);
+    }
+}
+```
+
+### Python
+
+```python
+class Solution:
+    def bitwiseComplement(self, n: int) -> int:
+        if n == 0:
+            return 1
+
+        b = bin(n)[2:]
+        res = ""
+
+        for c in b:
+            if c == '0':
+                res += '1'
+            else:
+                res += '0'
+
+        return int(res, 2)
+```
+
+Time Complexity
+
+```
+O(log n)
+```
+
+Space Complexity
+
+```
+O(log n)
+```
+
+---
+
+# Approach 3 — Bitwise NOT (~) With Mask
+
+`~n` flips **all bits**, including unwanted higher bits.
+
+So we mask them.
+
+### Java
+
+```java
+class Solution {
+    public int bitwiseComplement(int n) {
+        if (n == 0) return 1;
+
+        int mask = Integer.highestOneBit(n);
+        mask = (mask << 1) - 1;
+
+        return (~n) & mask;
+    }
+}
+```
+
+### Python
+
+```python
+class Solution:
+    def bitwiseComplement(self, n: int) -> int:
+        if n == 0:
+            return 1
+
+        mask = 1
+        while mask <= n:
+            mask <<= 1
+
+        mask -= 1
+        return (~n) & mask
+```
+
+Time Complexity
+
+```
+O(log n)
+```
+
+Space Complexity
+
+```
+O(1)
+```
+
+---
+
+# Approach 4 — Bit-by-Bit Construction
+
+Flip each bit manually.
+
+### Java
+
+```java
+class Solution {
+    public int bitwiseComplement(int n) {
+        if (n == 0) return 1;
+
+        int res = 0;
+        int bit = 1;
+
+        while (n > 0) {
+            if ((n & 1) == 0)
+                res |= bit;
+
+            bit <<= 1;
+            n >>= 1;
+        }
+
+        return res;
+    }
+}
+```
+
+### Python
+
+```python
+class Solution:
+    def bitwiseComplement(self, n: int) -> int:
+        if n == 0:
+            return 1
+
+        res = 0
+        bit = 1
+
+        while n > 0:
+            if (n & 1) == 0:
+                res |= bit
+
+            bit <<= 1
+            n >>= 1
+
+        return res
+```
+
+Time Complexity
+
+```
+O(log n)
+```
+
+Space Complexity
+
+```
+O(1)
+```
+
+---
+
+# Approach 5 — Math (Logarithm)
+
+Find number of bits using `log2`.
+
+### Java
+
+```java
+class Solution {
+    public int bitwiseComplement(int n) {
+        if (n == 0) return 1;
+
+        int bits = (int)(Math.log(n) / Math.log(2)) + 1;
+        int mask = (1 << bits) - 1;
+
+        return n ^ mask;
+    }
+}
+```
+
+### Python
+
+```python
+import math
+
+class Solution:
+    def bitwiseComplement(self, n: int) -> int:
+        if n == 0:
+            return 1
+
+        bits = int(math.log2(n)) + 1
+        mask = (1 << bits) - 1
+
+        return n ^ mask
+```
+
+Time Complexity
+
+```
+O(1)
+```
+
+Space Complexity
+
+```
+O(1)
+```
+
+---
+
+# Complexity Comparison
+
+| Approach   | Time     | Space    | Notes                 |
+| ---------- | -------- | -------- | --------------------- |
+| Bit Mask   | O(log n) | O(1)     | Most common           |
+| String     | O(log n) | O(log n) | Easy but slower       |
+| ~n + Mask  | O(log n) | O(1)     | Very clean            |
+| Bit-by-bit | O(log n) | O(1)     | Good for learning     |
+| Math       | O(1)     | O(1)     | Slight precision risk |
+
+---
