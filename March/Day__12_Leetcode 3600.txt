@@ -1,0 +1,540 @@
+# 3600. Maximize Spanning Tree Stability with Upgrades
+
+## 🧩 Problem Statement
+
+You are given an integer n, representing n nodes numbered from 0 to n - 1 and a list of edges, where edges[i] = [ui, vi, si, musti]:
+
+ui and vi indicates an undirected edge between nodes ui and vi.
+si is the strength of the edge.
+musti is an integer (0 or 1). If musti == 1, the edge must be included in the spanning tree. These edges cannot be upgraded.
+You are also given an integer k, the maximum number of upgrades you can perform. Each upgrade doubles the strength of an edge, and each eligible edge (with musti == 0) can be upgraded at most once.
+
+The stability of a spanning tree is defined as the minimum strength score among all edges included in it.
+
+Return the maximum possible stability of any valid spanning tree. If it is impossible to connect all nodes, return -1.
+
+Note: A spanning tree of a graph with n nodes is a subset of the edges that connects all nodes together (i.e. the graph is connected) without forming any cycles, and uses exactly n - 1 edges.
+
+
+* An integer `n` representing `n` nodes numbered from `0` to `n-1`.
+* A list `edges` where
+
+```
+edges[i] = [u, v, s, must]
+```
+
+Where:
+
+* `u`, `v` → nodes connected by an **undirected edge**
+* `s` → strength of the edge
+* `must` →
+
+  * `1` → edge **must be included** in the spanning tree
+  * `0` → edge **optional**
+
+You are also given:
+
+* `k` → maximum number of **upgrades**
+
+### Upgrade Rule
+
+* Only edges with `must = 0` can be upgraded
+* Upgrade doubles the strength:
+
+```
+s → 2 * s
+```
+
+Each edge can be upgraded **at most once**.
+
+---
+
+## 🌳 Spanning Tree Stability
+
+A **spanning tree**:
+
+* connects all nodes
+* uses exactly `n - 1` edges
+* contains **no cycles**
+
+The **stability** of a spanning tree is:
+
+```
+minimum edge strength in the tree
+```
+
+### Goal
+
+Return the **maximum possible stability**.
+
+If it's impossible to connect all nodes → return `-1`.
+
+---
+
+# 📊 Constraints
+
+```
+2 ≤ n ≤ 10^5
+1 ≤ edges.length ≤ 10^5
+1 ≤ s ≤ 10^5
+must ∈ {0,1}
+0 ≤ k ≤ n
+```
+
+---
+
+# 🧪 Example 1
+
+```
+Input:
+n = 3
+edges = [[0,1,2,1],[1,2,3,0]]
+k = 1
+
+Output:
+2
+```
+
+### Explanation
+
+Mandatory edge:
+
+```
+[0,1] strength = 2
+```
+
+Optional edge:
+
+```
+[1,2] strength = 3
+upgrade → 6
+```
+
+Tree edges:
+
+```
+2 , 6
+```
+
+Stability:
+
+```
+min(2,6) = 2
+```
+
+---
+
+# 🧪 Example 2
+
+```
+Input:
+n = 3
+edges = [[0,1,4,0],[1,2,3,0],[0,2,1,0]]
+k = 2
+```
+
+Upgrade:
+
+```
+4 → 8
+3 → 6
+```
+
+Tree:
+
+```
+8 , 6
+```
+
+Result:
+
+```
+min = 6
+```
+
+Output:
+
+```
+6
+```
+
+---
+
+# 🧪 Example 3
+
+```
+Input:
+n = 3
+edges =
+[[0,1,1,1],
+ [1,2,1,1],
+ [2,0,1,1]]
+
+k = 0
+```
+
+Mandatory edges form a **cycle** → invalid spanning tree.
+
+Output:
+
+```
+-1
+```
+
+---
+
+# 🧠 Key Observations
+
+We need to **maximize the minimum edge strength**.
+
+This is a classic pattern:
+
+```
+Maximize minimum value → Binary Search
+```
+
+Because if stability `X` is possible, then any value `< X` is also possible.
+
+So we can **binary search the answer**.
+
+---
+
+# ⚙️ Approach
+
+### 1️⃣ Binary Search
+
+Search possible stability value.
+
+```
+low = 1
+high = 2 * 10^5
+```
+
+For each candidate `mid`:
+
+Check if we can build a spanning tree with:
+
+```
+minimum edge strength ≥ mid
+```
+
+---
+
+### 2️⃣ Feasibility Check
+
+Use **Union Find (DSU)**.
+
+Steps:
+
+#### Step 1 — Add mandatory edges
+
+If mandatory edges:
+
+```
+strength < mid
+```
+
+Then impossible.
+
+Union them.
+
+If they form a cycle → return `-1`.
+
+---
+
+#### Step 2 — Add optional edges
+
+Three cases:
+
+```
+1️⃣ s >= mid
+   → directly usable
+
+2️⃣ s < mid but 2*s >= mid
+   → usable if upgraded
+
+3️⃣ 2*s < mid
+   → useless
+```
+
+---
+
+#### Step 3 — Use upgrades greedily
+
+Upgrade edges only if needed and:
+
+```
+k > 0
+```
+
+---
+
+#### Step 4 — Check connectivity
+
+All nodes must have **same root**.
+
+---
+
+# 🧾 Algorithm
+
+```
+1. Union mandatory edges
+2. If cycle → return -1
+3. Binary search stability
+
+4. For each mid:
+      create DSU
+
+      add mandatory edges
+      add optional edges >= mid
+
+      store upgrade candidates
+
+      use upgrades if needed
+
+      check connectivity
+
+5. return best mid
+```
+
+---
+
+# ⏱ Complexity
+
+```
+Binary Search: log(2e5) ≈ 18
+
+Union Find operations: O(E α(N))
+
+Total:
+O(E log S)
+```
+
+Efficient for:
+
+```
+E ≤ 100000
+```
+
+---
+
+# 💻 Java Implementation
+
+```java
+class DSU {
+    int[] parent;
+    int[] rank;
+
+    public DSU(int n) {
+        parent = new int[n];
+        rank = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+            rank[i] = 1;
+        }
+    }
+
+    public int find(int x) {
+        if (parent[x] == x) return x;
+        return parent[x] = find(parent[x]);
+    }
+
+    public boolean union(int a, int b) {
+        int pa = find(a);
+        int pb = find(b);
+
+        if (pa == pb) return false;
+
+        if (rank[pa] > rank[pb]) {
+            parent[pb] = pa;
+        } else if (rank[pb] > rank[pa]) {
+            parent[pa] = pb;
+        } else {
+            parent[pb] = pa;
+            rank[pa]++;
+        }
+
+        return true;
+    }
+}
+
+class Solution {
+
+    boolean check(int n, int[][] edges, int k, int mid) {
+
+        DSU dsu = new DSU(n);
+        List<int[]> upgrade = new ArrayList<>();
+
+        for (int[] e : edges) {
+
+            int u = e[0];
+            int v = e[1];
+            int s = e[2];
+            int m = e[3];
+
+            if (m == 1) {
+
+                if (s < mid) return false;
+
+                dsu.union(u, v);
+
+            } else {
+
+                if (s >= mid) {
+                    dsu.union(u, v);
+                } 
+                else if (2 * s >= mid) {
+                    upgrade.add(new int[]{u, v});
+                }
+            }
+        }
+
+        for (int[] e : upgrade) {
+
+            if (dsu.find(e[0]) != dsu.find(e[1])) {
+
+                if (k == 0) return false;
+
+                dsu.union(e[0], e[1]);
+                k--;
+            }
+        }
+
+        int root = dsu.find(0);
+
+        for (int i = 1; i < n; i++) {
+            if (dsu.find(i) != root)
+                return false;
+        }
+
+        return true;
+    }
+
+    public int maxStability(int n, int[][] edges, int k) {
+
+        DSU dsu = new DSU(n);
+
+        for (int[] e : edges) {
+
+            if (e[3] == 1) {
+
+                if (!dsu.union(e[0], e[1]))
+                    return -1;
+            }
+        }
+
+        int l = 1;
+        int r = 200000;
+        int ans = -1;
+
+        while (l <= r) {
+
+            int mid = l + (r - l) / 2;
+
+            if (check(n, edges, k, mid)) {
+
+                ans = mid;
+                l = mid + 1;
+
+            } else {
+                r = mid - 1;
+            }
+        }
+
+        return ans;
+    }
+}
+```
+
+---
+
+# 🐍 Python Implementation
+
+```python
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [1] * n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])   # Path compression
+        return self.parent[x]
+
+    def union(self, x, y):
+        xp = self.find(x)
+        yp = self.find(y)
+
+        if xp == yp:
+            return False
+
+        if self.rank[xp] > self.rank[yp]:
+            self.parent[yp] = xp
+        elif self.rank[xp] < self.rank[yp]:
+            self.parent[xp] = yp
+        else:
+            self.parent[xp] = yp
+            self.rank[yp] += 1
+
+        return True
+
+
+class Solution:
+    def maxStability(self, n: int, edges: List[List[int]], k: int) -> int:
+
+        def check(mid):
+            dsu = DSU(n)
+            candidates = []
+
+            for u, v, s, m in edges:
+                if m == 1:
+                    if s < mid:
+                        return False
+                    dsu.union(u, v)
+                else:
+                    if s >= mid:
+                        dsu.union(u, v)
+                    elif 2 * s >= mid:
+                        candidates.append((u, v))
+
+            nonlocal_k = k
+
+            for u, v in candidates:
+                if dsu.find(u) != dsu.find(v):
+                    if nonlocal_k <= 0:
+                        return False
+                    dsu.union(u, v)
+                    nonlocal_k -= 1
+
+            root = dsu.find(0)
+
+            for i in range(1, n):
+                if dsu.find(i) != root:
+                    return False
+
+            return True
+
+        # Check mandatory edges cycle
+        dsu = DSU(n)
+        for u, v, s, m in edges:
+            if m == 1:
+                if dsu.find(u) == dsu.find(v):
+                    return -1
+                dsu.union(u, v)
+
+        ans = -1
+        l, r = 1, int(2e5)
+
+        while l <= r:
+            mid = (l + r) // 2
+
+            if check(mid):
+                ans = mid
+                l = mid + 1
+            else:
+                r = mid - 1
+
+        return ans
+
+````
