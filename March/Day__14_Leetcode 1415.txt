@@ -1,0 +1,640 @@
+# Leetcode: 1415. The k-th Lexicographical String of All Happy Strings of Length n
+A happy string is a string that:
+
+consists only of letters of the set ['a', 'b', 'c'].
+s[i] != s[i + 1] for all values of i from 1 to s.length - 1 (string is 1-indexed).
+For example, strings "abc", "ac", "b" and "abcbabcbcb" are all happy strings and strings "aa", "baa" and "ababbc" are not happy strings.
+
+Given two integers n and k, consider a list of all happy strings of length n sorted in lexicographical order.
+
+Return the kth string of this list or return an empty string if there are less than k happy strings of length n.
+
+ 
+
+Example 1:
+
+Input: n = 1, k = 3
+Output: "c"
+Explanation: The list ["a", "b", "c"] contains all happy strings of length 1. The third string is "c".
+Example 2:
+
+Input: n = 1, k = 4
+Output: ""
+Explanation: There are only 3 happy strings of length 1.
+Example 3:
+
+Input: n = 3, k = 9
+Output: "cab"
+Explanation: There are 12 different happy string of length 3 ["aba", "abc", "aca", "acb", "bab", "bac", "bca", "bcb", "cab", "cac", "cba", "cbc"]. You will find the 9th string = "cab"
+ 
+
+Constraints:
+
+1 <= n <= 10
+1 <= k <= 100
+
+## Problem Statement
+
+A **happy string** is a string that:
+
+1. Consists only of the characters **'a', 'b', and 'c'**.
+2. **No two adjacent characters are the same**.
+
+Given two integers **n** and **k**, consider all happy strings of length **n** sorted in **lexicographical order**.
+
+Return the **k-th happy string** of length **n**.
+If there are **fewer than k happy strings**, return an **empty string ""**.
+
+---
+
+## Example 1
+
+**Input**
+
+```
+n = 1
+k = 3
+```
+
+**Happy strings**
+
+```
+a
+b
+c
+```
+
+**Output**
+
+```
+c
+```
+
+**Explanation**
+
+The lexicographically sorted happy strings are:
+
+```
+["a","b","c"]
+```
+
+The **3rd string is "c"**.
+
+---
+
+## Example 2
+
+**Input**
+
+```
+n = 1
+k = 4
+```
+
+**Output**
+
+```
+""
+```
+
+**Explanation**
+
+There are only **3 happy strings**, so the **4th does not exist**.
+
+---
+
+## Example 3
+
+**Input**
+
+```
+n = 3
+k = 9
+```
+
+**All Happy Strings of length 3**
+
+```
+1  abc
+2  acb
+3  bac
+4  bca
+5  cab
+6  cba
+```
+
+Total = **6**
+
+Since **k = 9 > 6**, return:
+
+```
+""
+```
+
+---
+
+# Key Idea
+
+To generate happy strings:
+
+1. Start with an empty string.
+2. Add characters from **{'a','b','c'}**.
+3. **Skip a character if it equals the previous character**.
+4. Continue until length **n** is reached.
+5. Collect strings in **lexicographical order**.
+
+---
+
+# Approach 1 — Backtracking with Counter
+
+### Idea
+
+We generate happy strings **in lexicographical order** and maintain a **global counter**.
+
+When the **counter reaches k**, we store the result and stop recursion.
+
+### Steps
+
+1. Start with an empty string.
+2. Recursively add characters `'a','b','c'`.
+3. Skip characters equal to the previous character.
+4. When string length becomes **n**, increment count.
+5. If count == k → store result.
+
+### Time Complexity
+
+```
+O(2^n)
+```
+
+Each position has at most **2 valid choices**.
+
+### Space Complexity
+
+```
+O(n)
+```
+
+Recursion stack.
+
+---
+
+## Java Implementation (Approach 1)
+
+```java
+class Solution {
+
+    private int count = 0;
+    private String result = "";
+
+    public String getHappyString(int n, int k) {
+        backtrack(n, k, new StringBuilder(), ' ');
+        return result;
+    }
+
+    private void backtrack(int n, int k, StringBuilder sb, char lastChar) {
+
+        if (sb.length() == n) {
+            count++;
+
+            if (count == k) {
+                result = sb.toString();
+            }
+            return;
+        }
+
+        for (char ch : new char[]{'a','b','c'}) {
+
+            if (ch != lastChar) {
+
+                sb.append(ch);
+
+                backtrack(n, k, sb, ch);
+
+                sb.deleteCharAt(sb.length() - 1);
+
+                if (!result.isEmpty())
+                    return;
+            }
+        }
+    }
+}
+```
+
+---
+
+## Python Implementation (Approach 1)
+
+```python
+class Solution:
+    def getHappyString(self, n: int, k: int) -> str:
+        self.count = 0
+        self.result = ""
+
+        def backtrack(path, last):
+            if len(path) == n:
+                self.count += 1
+                if self.count == k:
+                    self.result = path
+                return
+
+            for ch in ['a','b','c']:
+                if ch != last:
+                    backtrack(path + ch, ch)
+                    if self.result:
+                        return
+
+        backtrack("", "")
+        return self.result
+```
+
+---
+
+# Approach 2 — Backtracking with List
+
+### Idea
+
+Instead of using a counter, we **store generated strings in a list**.
+
+When the list size becomes **k**, we stop recursion.
+
+Finally return:
+
+```
+result[k-1]
+```
+
+### Steps
+
+1. Maintain a **List<String> result**.
+2. Generate happy strings using backtracking.
+3. Add string to the list when length == n.
+4. Stop recursion when list size == k.
+
+### Time Complexity
+
+```
+O(2^n)
+```
+
+### Space Complexity
+
+```
+O(k * n)
+```
+
+Storing up to **k strings**.
+
+---
+
+## Java Implementation (Approach 2)
+
+```java
+class Solution {
+
+    public String getHappyString(int n, int k) {
+
+        List<String> result = new ArrayList<>();
+
+        backtrack(result, new StringBuilder(), n, k);
+
+        return k <= result.size() ? result.get(k - 1) : "";
+    }
+
+    private void backtrack(List<String> result, StringBuilder sb, int n, int k) {
+
+        if (sb.length() == n) {
+            result.add(sb.toString());
+            return;
+        }
+
+        if (result.size() == k)
+            return;
+
+        for (char c = 'a'; c <= 'c'; c++) {
+
+            if (sb.length() == 0 || sb.charAt(sb.length() - 1) != c) {
+
+                sb.append(c);
+
+                backtrack(result, sb, n, k);
+
+                sb.deleteCharAt(sb.length() - 1);
+
+                if (result.size() == k)
+                    return;
+            }
+        }
+    }
+}
+```
+
+---
+
+## Python Implementation (Approach 2)
+
+```python
+class Solution:
+    def getHappyString(self, n: int, k: int) -> str:
+
+        result = []
+
+        def backtrack(path):
+            if len(path) == n:
+                result.append(path)
+                return
+
+            if len(result) == k:
+                return
+
+            for c in ['a','b','c']:
+                if not path or path[-1] != c:
+                    backtrack(path + c)
+
+        backtrack("")
+
+        return result[k-1] if k <= len(result) else ""
+```
+
+---
+
+# Happy String Tree Visualization (n = 3)
+
+```
+            ""
+        /    |    \
+       a     b     c
+     /  \   / \   / \
+   ab  ac ba  bc ca  cb
+  / \  / \ / \ / \ / \ / \
+abc acb bac bca cab cba
+```
+
+Valid strings:
+
+```
+abc
+acb
+bac
+bca
+cab
+cba
+```
+```
+
+# Approach 3 — Mathematical / Greedy (Optimal)
+
+## Key Observation
+
+For a happy string of length **n**:
+
+* The **first character** can be **3 choices** → `a, b, c`
+* Every **next character** has **2 choices** (anything except the previous character)
+
+So the **total number of happy strings** is:
+
+[
+3 \times 2^{(n-1)}
+]
+
+Example:
+
+```
+n = 3
+Total = 3 * 2^(2) = 12
+```
+
+But because of adjacency constraints, the lexicographically valid ones become:
+
+```
+abc
+acb
+bac
+bca
+cab
+cba
+```
+
+---
+
+# Core Idea
+
+Each prefix represents a **block of strings**.
+
+Example `n = 3`
+
+Each first character generates:
+
+```
+a -> 2^(2) = 4 possible
+b -> 4 possible
+c -> 4 possible
+```
+
+So we determine which **block k belongs to**.
+
+---
+
+# Step-by-Step Algorithm
+
+1. Compute:
+
+```
+blockSize = 2^(n-1)
+```
+
+2. Determine first character:
+
+```
+index = (k-1) / blockSize
+```
+
+3. Choose from:
+
+```
+['a','b','c']
+```
+
+4. Reduce k:
+
+```
+k = k % blockSize
+```
+
+5. For the remaining positions:
+
+* Only **2 characters allowed**
+* Choose based on **k**
+
+6. Continue until length `n`.
+
+---
+
+# Example Walkthrough
+
+Input
+
+```
+n = 3
+k = 4
+```
+
+Total strings:
+
+```
+3 * 2^(2) = 12
+```
+
+Block size:
+
+```
+2^(2) = 4
+```
+
+First character:
+
+```
+(4-1)/4 = 0
+→ 'a'
+```
+
+Remaining possibilities:
+
+```
+ab
+ac
+```
+
+Continue selection.
+
+Final answer:
+
+```
+acb
+```
+
+---
+
+# Time Complexity
+
+```
+O(n)
+```
+
+We build the string **one character at a time**.
+
+---
+
+# Space Complexity
+
+```
+O(1)
+```
+
+Only storing the result string.
+
+---
+
+# Java Implementation (Greedy)
+
+```java
+class Solution {
+    public String getHappyString(int n, int k) {
+
+        int total = 3 * (1 << (n - 1));
+        if (k > total) return "";
+
+        StringBuilder res = new StringBuilder();
+
+        char[] chars = {'a','b','c'};
+
+        int block = 1 << (n - 1);
+
+        int index = (k - 1) / block;
+
+        res.append(chars[index]);
+
+        k = (k - 1) % block + 1;
+
+        for (int i = 1; i < n; i++) {
+
+            block /= 2;
+
+            char prev = res.charAt(res.length() - 1);
+
+            char[] next;
+
+            if (prev == 'a') next = new char[]{'b','c'};
+            else if (prev == 'b') next = new char[]{'a','c'};
+            else next = new char[]{'a','b'};
+
+            index = (k - 1) / block;
+
+            res.append(next[index]);
+
+            k = (k - 1) % block + 1;
+        }
+
+        return res.toString();
+    }
+}
+```
+
+---
+
+# Python Implementation (Greedy)
+
+```python
+class Solution:
+    def getHappyString(self, n: int, k: int) -> str:
+
+        total = 3 * (2 ** (n - 1))
+        if k > total:
+            return ""
+
+        chars = ['a','b','c']
+        block = 2 ** (n - 1)
+
+        index = (k - 1) // block
+        res = [chars[index]]
+
+        k = (k - 1) % block + 1
+
+        for i in range(1, n):
+
+            block //= 2
+            prev = res[-1]
+
+            if prev == 'a':
+                next_chars = ['b','c']
+            elif prev == 'b':
+                next_chars = ['a','c']
+            else:
+                next_chars = ['a','b']
+
+            index = (k - 1) // block
+            res.append(next_chars[index])
+
+            k = (k - 1) % block + 1
+
+        return "".join(res)
+```
+
+---
+
+# Comparison of All Approaches
+
+| Approach       | Method                 | Time     | Space    |
+| -------------- | ---------------------- | -------- | -------- |
+| Approach 1     | Backtracking + Counter | O(2^n)   | O(n)     |
+| Approach 2     | Backtracking + List    | O(2^n)   | O(k·n)   |
+| **Approach 3** | **Greedy / Math**      | **O(n)** | **O(1)** |
+
+---
+
+# Why Approach 3 is Best
+
+✔ No recursion
+✔ No backtracking tree
+✔ Directly finds the **k-th string**
+✔ **Optimal O(n)** time
