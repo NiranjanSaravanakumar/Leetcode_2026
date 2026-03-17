@@ -1,0 +1,280 @@
+#1727. Largest Submatrix With Rearrangements
+You are given a binary matrix matrix of size m x n, and you are allowed to rearrange the columns of the matrix in any order.
+
+Return the area of the largest submatrix within matrix where every element of the submatrix is 1 after reordering the columns optimally.
+
+Example 1:
+
+Input: matrix = [[0,0,1],[1,1,1],[1,0,1]]
+Output: 4
+Explanation: You can rearrange the columns as shown above.
+The largest submatrix of 1s, in bold, has an area of 4.
+
+Example 2:
+
+Input: matrix = [[1,0,1,0,1]]
+Output: 3
+Explanation: You can rearrange the columns as shown above.
+The largest submatrix of 1s, in bold, has an area of 3.
+
+Example 3:
+
+Input: matrix = [[1,1,0],[1,0,1]]
+Output: 2
+
+Explanation: Notice that you must rearrange entire columns, and there is no way to make a submatrix of 1s larger than an area of 2.
+ 
+
+Constraints:
+
+m == matrix.length
+n == matrix[i].length
+1 <= m * n <= 105
+matrix[i][j] is either 0 or 1.
+
+#  Key Idea
+
+To solve this problem efficiently:
+
+1. Treat each row as the **base of a histogram**.
+2. Convert the matrix into **heights of consecutive `1`s** from top to bottom.
+3. For every row:
+
+   * Sort the column heights in **descending order**.
+   * Calculate possible areas using:
+
+```
+area = height × width
+```
+
+Sorting works because we are allowed to **rearrange columns**.
+
+---
+
+#  Example
+
+### Input
+
+```
+matrix =
+[
+ [0,0,1],
+ [1,1,1],
+ [1,0,1]
+]
+```
+
+### Step 1: Build Heights
+
+```
+[
+ [0,0,1],
+ [1,1,2],
+ [2,0,3]
+]
+```
+
+Each cell now represents **continuous 1s above it**.
+
+---
+
+### Step 2: Sort Heights per Row
+
+Example row:
+
+```
+[2,0,3] → [3,2,0]
+```
+
+This simulates **rearranging columns** to maximize the rectangle.
+
+---
+
+### Step 3: Compute Area
+
+| Height | Width | Area |
+| ------ | ----- | ---- |
+| 3      | 1     | 3    |
+| 2      | 2     | 4    |
+| 0      | 3     | 0    |
+
+Maximum area = **4**
+
+---
+
+#  Algorithm
+
+1. Initialize a **heights array** of size `n`.
+2. Traverse each row:
+
+   * Update heights for consecutive `1`s.
+   * Sort heights in descending order.
+   * Compute the maximum rectangle area.
+
+---
+
+#  Java Implementation
+
+```java
+import java.util.*;
+
+class Solution {
+    public int largestSubmatrix(int[][] matrix) {
+        int m = matrix.length;
+        int n = matrix[0].length;
+
+        int[] heights = new int[n];
+        int maxArea = 0;
+
+        for (int[] row : matrix) {
+
+            for (int j = 0; j < n; j++) {
+                if (row[j] == 1)
+                    heights[j]++;
+                else
+                    heights[j] = 0;
+            }
+
+            int[] sorted = heights.clone();
+            Arrays.sort(sorted);
+
+            for (int j = n - 1; j >= 0; j--) {
+                int height = sorted[j];
+                int width = n - j;
+                maxArea = Math.max(maxArea, height * width);
+            }
+        }
+
+        return maxArea;
+    }
+}
+```
+
+---
+
+# Python Implementation
+
+```python
+class Solution:
+    def largestSubmatrix(self, matrix: list[list[int]]) -> int:
+        m, n = len(matrix), len(matrix[0])
+        heights = [0] * n
+        max_area = 0
+
+        for row in matrix:
+            for j in range(n):
+                heights[j] = heights[j] + 1 if row[j] else 0
+
+            sorted_heights = sorted(heights, reverse=True)
+
+            for j in range(n):
+                max_area = max(max_area, sorted_heights[j] * (j + 1))
+
+        return max_area
+```
+
+---
+
+# ⏱ Complexity Analysis
+
+| Complexity       | Value              |
+| ---------------- | ------------------ |
+| Time Complexity  | **O(m × n log n)** |
+| Space Complexity | **O(n)**           |
+
+Where:
+
+* `m` = number of rows
+* `n` = number of columns
+
+---
+
+
+---
+
+#  Java Solution
+
+```java
+import java.util.*;
+
+class Solution {
+    public int largestSubmatrix(int[][] matrix) {
+        int m = matrix.length;   // rows
+        int n = matrix[0].length; // columns
+
+        // Build heights of consecutive 1s
+        for (int i = 1; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == 1) {
+                    matrix[i][j] += matrix[i - 1][j];
+                }
+            }
+        }
+
+        int maxArea = 0;
+
+        for (int i = 0; i < m; i++) {
+            int[] currow = matrix[i].clone();
+            Arrays.sort(currow);
+
+            for (int j = n - 1; j >= 0; j--) {
+                int height = currow[j];
+                int width = n - j;
+                maxArea = Math.max(maxArea, height * width);
+            }
+        }
+
+        return maxArea;
+    }
+}
+```
+
+---
+
+#  Python3 Equivalent
+
+```python
+class Solution:
+    def largestSubmatrix(self, matrix: list[list[int]]) -> int:
+        m = len(matrix)      # rows
+        n = len(matrix[0])   # columns
+
+        # Build heights of consecutive 1s
+        for i in range(1, m):
+            for j in range(n):
+                if matrix[i][j] == 1:
+                    matrix[i][j] += matrix[i-1][j]
+
+        max_area = 0
+
+        for i in range(m):
+            currow = sorted(matrix[i])
+
+            for j in range(n-1, -1, -1):
+                height = currow[j]
+                width = n - j
+                max_area = max(max_area, height * width)
+
+        return max_area
+```
+
+---
+
+# ⏱ Complexity
+
+| Type  | Complexity                  |
+| ----- | --------------------------- |
+| Time  | **O(m × n log n)**          |
+| Space | **O(n)** (for sorting rows) |
+
+---
+
+#  Core Idea
+
+1️⃣ Convert matrix values into **heights of consecutive `1`s**
+2️⃣ For each row **sort the heights** (simulating column rearrangement)
+3️⃣ Compute rectangle area:
+
+```
+area = height × width
+```
