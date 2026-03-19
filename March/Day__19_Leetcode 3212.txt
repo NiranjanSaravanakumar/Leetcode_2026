@@ -1,0 +1,189 @@
+
+📘 LeetCode 3212 – Count Submatrices With Equal Frequency of X and Y
+
+🧩 Problem Summary
+
+You are given a 2D grid consisting of:
+
+'X'
+
+'Y'
+
+other characters (ignored)
+
+
+Count the number of submatrices such that:
+
+Number of 'X' == Number of 'Y'
+
+Count is greater than 0
+
+
+
+---
+
+💡 Key Idea
+
+We use 2D Prefix Sum to track counts of:
+
+'X'
+
+'Y'
+
+
+For every cell (i, j), we compute:
+
+Total 'X' from (0,0) → (i,j)
+
+Total 'Y' from (0,0) → (i,j)
+
+
+If both are equal and > 0 → valid submatrix.
+
+
+---
+
+⚠️ Important Clarification (Don’t skip this)
+
+This solution only counts:
+
+> Submatrices starting from (0,0)
+
+
+
+It does NOT cover all possible submatrices.
+
+If the problem expects all submatrices → this approach is incomplete.
+
+
+---
+
+🚀 Approach
+
+1. Create two prefix sum matrices:
+
+cumSumX
+
+cumSumY
+
+
+
+2. Traverse grid:
+
+Convert:
+
+'X' → 1
+
+'Y' → 1
+
+
+
+
+3. Build prefix sum:
+
+top + left - overlap
+
+
+4. At each cell:
+
+If counts equal and > 0 → increment result
+
+
+
+
+
+---
+
+🧮 Complexity
+
+Time: O(m × n)
+
+Space: O(m × n)
+
+
+
+---
+
+🧑‍💻 Python Implementation
+
+class Solution:
+    def numberOfSubmatrices(self, grid):
+        m = len(grid)
+        n = len(grid[0])
+
+        cumSumX = [[0] * n for _ in range(m)]
+        cumSumY = [[0] * n for _ in range(m)]
+
+        count = 0
+
+        for i in range(m):
+            for j in range(n):
+
+                cumSumX[i][j] = 1 if grid[i][j] == 'X' else 0
+                cumSumY[i][j] = 1 if grid[i][j] == 'Y' else 0
+
+                if i > 0:
+                    cumSumX[i][j] += cumSumX[i - 1][j]
+                    cumSumY[i][j] += cumSumY[i - 1][j]
+
+                if j > 0:
+                    cumSumX[i][j] += cumSumX[i][j - 1]
+                    cumSumY[i][j] += cumSumY[i][j - 1]
+
+                if i > 0 and j > 0:
+                    cumSumX[i][j] -= cumSumX[i - 1][j - 1]
+                    cumSumY[i][j] -= cumSumY[i - 1][j - 1]
+
+                if cumSumX[i][j] == cumSumY[i][j] and cumSumX[i][j] > 0:
+                    count += 1
+
+        return count
+
+
+---
+
+☕ Java Implementation
+
+class Solution {
+    public int numberOfSubmatrices(char[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+
+        int[][] cumSumX = new int[m][n];
+        int[][] cumSumY = new int[m][n];
+
+        int count = 0;
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+
+                cumSumX[i][j] = (grid[i][j] == 'X') ? 1 : 0;
+                cumSumY[i][j] = (grid[i][j] == 'Y') ? 1 : 0;
+
+                if (i > 0) {
+                    cumSumX[i][j] += cumSumX[i - 1][j];
+                    cumSumY[i][j] += cumSumY[i - 1][j];
+                }
+
+                if (j > 0) {
+                    cumSumX[i][j] += cumSumX[i][j - 1];
+                    cumSumY[i][j] += cumSumY[i][j - 1];
+                }
+
+                if (i > 0 && j > 0) {
+                    cumSumX[i][j] -= cumSumX[i - 1][j - 1];
+                    cumSumY[i][j] -= cumSumY[i - 1][j - 1];
+                }
+
+                if (cumSumX[i][j] == cumSumY[i][j] && cumSumX[i][j] > 0) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+}
+
+
+
