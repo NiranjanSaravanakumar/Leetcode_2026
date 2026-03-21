@@ -1,0 +1,205 @@
+# Leetcode 3643
+🧩 Reverse Submatrix (LeetCode 3643)
+
+📌 Problem Statement
+
+You are given a 2D integer matrix grid of size m x n.
+You are also given three integers x, y, and k.
+
+Your task is to reverse the rows of a k × k submatrix starting from position (x, y).
+
+🔹 More formally:
+
+The submatrix spans:
+
+Rows: x to x + k - 1
+
+Columns: y to y + k - 1
+
+
+Reverse the submatrix vertically:
+
+First row ↔ Last row
+
+Second row ↔ Second last row
+
+and so on...
+
+
+
+Return the modified grid.
+
+
+---
+
+🧠 Example
+
+Input
+
+grid = [
+  [1, 2, 3, 4],
+  [5, 6, 7, 8],
+  [9,10,11,12],
+  [13,14,15,16]
+]
+
+x = 1, y = 1, k = 2
+
+Submatrix
+
+[6, 7]
+[10,11]
+
+After Reverse
+
+[10,11]
+[6, 7]
+
+Output
+
+[
+  [1, 2, 3, 4],
+  [5,10,11,8],
+  [9, 6, 7,12],
+  [13,14,15,16]
+]
+
+
+---
+
+🧪 Test Cases
+
+✅ Test Case 1
+
+Input:
+grid = [[1,2],[3,4]]
+x = 0, y = 0, k = 2
+
+Output:
+[[3,4],
+ [1,2]]
+
+
+---
+
+✅ Test Case 2
+
+Input:
+grid = [[1,2,3],[4,5,6],[7,8,9]]
+x = 0, y = 1, k = 2
+
+Output:
+[[1,5,6],
+ [4,2,3],
+ [7,8,9]]
+
+
+---
+
+✅ Test Case 3 (Edge Case)
+
+Input:
+grid = [[1]]
+x = 0, y = 0, k = 1
+
+Output:
+[[1]]
+
+
+---
+
+⚙️ Approach
+
+🔑 Key Idea:
+
+We perform a vertical flip of the submatrix.
+
+🪜 Steps:
+
+1. Identify boundaries:
+
+start_row = x
+
+end_row = x + k - 1
+
+
+
+2. Loop while start_row < end_row
+
+
+3. Swap entire rows (within submatrix columns)
+
+
+4. Move inward:
+
+start_row += 1
+
+end_row -= 1
+
+
+
+
+
+---
+
+⏱️ Complexity Analysis
+
+Type	Complexity
+
+Time	O(k²)
+Space	O(1)
+
+
+
+---
+
+💻 Java Solution
+
+class Solution {
+    public int[][] reverseSubmatrix(int[][] grid, int x, int y, int k) {
+        int startRow = x;
+        int endRow = x + k - 1;
+
+        int startCol = y;
+        int endCol = y + k - 1;
+
+        while (startRow < endRow) {
+            for (int j = startCol; j <= endCol; j++) {
+                int temp = grid[startRow][j];
+                grid[startRow][j] = grid[endRow][j];
+                grid[endRow][j] = temp;
+            }
+            startRow++;
+            endRow--;
+        }
+
+        return grid;
+    }
+}
+
+
+---
+
+🐍 Python3 Solution
+
+from typing import List
+
+class Solution:
+    def reverseSubmatrix(self, grid: List[List[int]], x: int, y: int, k: int) -> List[List[int]]:
+        start_row = x
+        end_row = x + k - 1
+
+        start_col = y
+        end_col = y + k - 1
+
+        while start_row < end_row:
+            for j in range(start_col, end_col + 1):
+                grid[start_row][j], grid[end_row][j] = grid[end_row][j], grid[start_row][j]
+
+            start_row += 1
+            end_row -= 1
+
+        return grid
+
+
+---
