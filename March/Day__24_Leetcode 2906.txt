@@ -1,0 +1,315 @@
+ 
+# 🚀 LeetCode 2906 — Construct Product Matrix
+
+2906. Construct Product Matrix
+
+## 🧩 Problem Statement
+
+Given a 0-indexed 2D integer matrix grid of size n * m, we define a 0-indexed 2D matrix p of size n * m as the product matrix of grid if the following condition is met:
+
+Each element p[i][j] is calculated as the product of all elements in grid except for the element grid[i][j]. This product is then taken modulo 12345.
+Return the product matrix of grid.
+
+ 
+
+Example 1:
+
+Input: grid = [[1,2],[3,4]]
+Output: [[24,12],[8,6]]
+Explanation: p[0][0] = grid[0][1] * grid[1][0] * grid[1][1] = 2 * 3 * 4 = 24
+p[0][1] = grid[0][0] * grid[1][0] * grid[1][1] = 1 * 3 * 4 = 12
+p[1][0] = grid[0][0] * grid[0][1] * grid[1][1] = 1 * 2 * 4 = 8
+p[1][1] = grid[0][0] * grid[0][1] * grid[1][0] = 1 * 2 * 3 = 6
+So the answer is [[24,12],[8,6]].
+Example 2:
+
+Input: grid = [[12345],[2],[1]]
+Output: [[2],[0],[0]]
+Explanation: p[0][0] = grid[0][1] * grid[0][2] = 2 * 1 = 2.
+p[0][1] = grid[0][0] * grid[0][2] = 12345 * 1 = 12345. 12345 % 12345 = 0. So p[0][1] = 0.
+p[0][2] = grid[0][0] * grid[0][1] = 12345 * 2 = 24690. 24690 % 12345 = 0. So p[0][2] = 0.
+So the answer is [[2],[0],[0]].
+ 
+
+Constraints:
+
+1 <= n == grid.length <= 105
+1 <= m == grid[i].length <= 105
+2 <= n * m <= 105
+1 <= grid[i][j] <= 109
+
+---
+
+## 🧠 Key Idea
+
+This is a **2D version of "Product of Array Except Self"**.
+
+We avoid division by using:
+
+* **Prefix product**
+* **Suffix product**
+
+---
+
+# 🛠️ Approach 1: Flatten + Prefix & Suffix Arrays
+
+### 💡 Idea
+
+1. Convert 2D grid → 1D array
+2. Compute:
+
+   * `prefix[i]` = product before index `i`
+   * `suffix[i]` = product after index `i`
+3. Result:
+
+   ```
+   answer[i] = prefix[i] * suffix[i]
+   ```
+
+---
+
+## ✅ Java Implementation
+
+```java
+class Solution {
+    public int[][] constructProductMatrix(int[][] grid) {
+
+        int rows = grid.length;
+        int cols = grid[0].length;
+        int totalSize = rows * cols;
+        int mod = 12345;
+
+        // Flatten grid
+        int[] flatArray = new int[totalSize];
+        int index = 0;
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                flatArray[index++] = grid[r][c];
+            }
+        }
+
+        // Prefix
+        long[] prefix = new long[totalSize];
+        prefix[0] = 1;
+
+        for (int i = 1; i < totalSize; i++) {
+            prefix[i] = (prefix[i - 1] * flatArray[i - 1]) % mod;
+        }
+
+        // Suffix
+        long[] suffix = new long[totalSize];
+        suffix[totalSize - 1] = 1;
+
+        for (int i = totalSize - 2; i >= 0; i--) {
+            suffix[i] = (flatArray[i + 1] * suffix[i + 1]) % mod;
+        }
+
+        // Build result
+        index = 0;
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                grid[r][c] = (int) ((prefix[index] * suffix[index]) % mod);
+                index++;
+            }
+        }
+
+        return grid;
+    }
+}
+```
+
+---
+
+## 🐍 Python 3 Implementation
+
+```python
+class Solution:
+    def constructProductMatrix(self, grid):
+        rows, cols = len(grid), len(grid[0])
+        total_size = rows * cols
+        mod = 12345
+
+        # Flatten grid
+        flat_array = []
+        for r in range(rows):
+            for c in range(cols):
+                flat_array.append(grid[r][c])
+
+        # Prefix
+        prefix = [0] * total_size
+        prefix[0] = 1
+
+        for i in range(1, total_size):
+            prefix[i] = (prefix[i - 1] * flat_array[i - 1]) % mod
+
+        # Suffix
+        suffix = [0] * total_size
+        suffix[-1] = 1
+
+        for i in range(total_size - 2, -1, -1):
+            suffix[i] = (flat_array[i + 1] * suffix[i + 1]) % mod
+
+        # Build result
+        index = 0
+        for r in range(rows):
+            for c in range(cols):
+                grid[r][c] = (prefix[index] * suffix[index]) % mod
+                index += 1
+
+        return grid
+```
+
+---
+
+## ⏱️ Complexity
+
+* **Time:** `O(m * n)`
+* **Space:** `O(m * n)` (extra arrays)
+
+---
+
+# ⚡ Approach 2: Optimized (No Extra Arrays)
+
+### 💡 Idea
+
+Instead of storing prefix/suffix arrays:
+
+* First pass → store prefix in result
+* Second pass → multiply with suffix
+
+---
+
+## ✅ Java Implementation
+
+```java
+class Solution {
+    public int[][] constructProductMatrix(int[][] grid) {
+
+        int rows = grid.length;
+        int cols = grid[0].length;
+        int mod = 12345;
+
+        int[][] result = new int[rows][cols];
+
+        long prefix = 1;
+
+        // Prefix pass
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                result[r][c] = (int) prefix;
+                prefix = (prefix * grid[r][c]) % mod;
+            }
+        }
+
+        long suffix = 1;
+
+        // Suffix pass
+        for (int r = rows - 1; r >= 0; r--) {
+            for (int c = cols - 1; c >= 0; c--) {
+                result[r][c] = (int) ((result[r][c] * suffix) % mod);
+                suffix = (suffix * grid[r][c]) % mod;
+            }
+        }
+
+        return result;
+    }
+}
+```
+
+---
+
+## 🐍 Python 3 Implementation
+
+```python
+class Solution:
+    def constructProductMatrix(self, grid):
+        rows, cols = len(grid), len(grid[0])
+        mod = 12345
+
+        result = [[0] * cols for _ in range(rows)]
+
+        prefix = 1
+
+        # Prefix pass
+        for r in range(rows):
+            for c in range(cols):
+                result[r][c] = prefix
+                prefix = (prefix * grid[r][c]) % mod
+
+        suffix = 1
+
+        # Suffix pass
+        for r in range(rows - 1, -1, -1):
+            for c in range(cols - 1, -1, -1):
+                result[r][c] = (result[r][c] * suffix) % mod
+                suffix = (suffix * grid[r][c]) % mod
+
+        return result
+```
+
+---
+
+## ⏱️ Complexity
+
+* **Time:** `O(m * n)`
+* **Space:** `O(1)` (excluding output) ✅ BEST
+
+---
+
+# 🧪 Important Test Cases
+
+### 🔹 Basic Case
+
+```
+Input: [[1,2],[3,4]]
+Output: [[24,12],[8,6]]
+```
+
+### 🔹 Single Element
+
+```
+Input: [[5]]
+Output: [[1]]
+```
+
+### 🔹 Contains Zero
+
+```
+Input: [[1,2,0],[4,5,6]]
+Output: depends on zero handling (all except position)
+```
+
+### 🔹 Large Values
+
+```
+Input: [[1000,2000],[3000,4000]]
+Check modulo correctness
+```
+
+### 🔹 All Ones
+
+```
+Input: [[1,1],[1,1]]
+Output: [[1,1],[1,1]]
+```
+
+---
+
+# ⚠️ Common Mistakes
+
+* ❌ Using division (not allowed with modulo)
+* ❌ Forgetting modulo at each step
+* ❌ Overflow (use `long`)
+* ❌ Incorrect flatten index mapping
+
+---
+
+# 🏁 Summary
+
+| Approach                    | Space  | Difficulty |
+| --------------------------- | ------ | ---------- |
+| Flatten + arrays            | O(n*m) | Easy       |
+| Optimized (prefix + suffix) | O(1)   | Best       |
+
+---
