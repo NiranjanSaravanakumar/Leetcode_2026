@@ -1,0 +1,265 @@
+# 🟢 LeetCode 2840 - Check if Strings Can be Made Equal With Operations II
+
+## 📘 Problem
+
+
+2840. Check if Strings Can be Made Equal With Operations II
+
+You are given two strings s1 and s2, both of length n, consisting of lowercase English letters.
+
+You can apply the following operation on any of the two strings any number of times:
+
+Choose any two indices i and j such that i < j and the difference j - i is even, then swap the two characters at those indices in the string.
+Return true if you can make the strings s1 and s2 equal, and false otherwise.
+
+ 
+
+Example 1:
+Input: s1 = "abcdba", s2 = "cabdab"
+Output: true
+Explanation: We can apply the following operations on s1:
+- Choose the indices i = 0, j = 2. The resulting string is s1 = "cbadba".
+- Choose the indices i = 2, j = 4. The resulting string is s1 = "cbbdaa".
+- Choose the indices i = 1, j = 5. The resulting string is s1 = "cabdab" = s2.
+
+Example 2:
+Input: s1 = "abe", s2 = "bea"
+Output: false
+Explanation: It is not possible to make the two strings equal.
+ 
+
+Constraints:
+
+n == s1.length == s2.length
+1 <= n <= 105
+s1 and s2 consist only of lowercase English letters.
+
+### 🔍 Task
+
+Return `true` if you can make `s1` equal to `s2`, otherwise `false`.
+
+---
+
+## 🧠 Key Insight
+
+* Even indices can only swap with even indices
+* Odd indices can only swap with odd indices
+
+👉 So we just need to check:
+
+* Do both strings have the **same characters at even positions?**
+* Do both strings have the **same characters at odd positions?**
+
+---
+
+# 🚀 Approach 1: Sorting
+
+## 💡 Idea
+
+* Collect even and odd characters separately
+* Sort and compare
+
+### ⏱ Complexity
+
+* Time: `O(n log n)`
+* Space: `O(n)`
+
+### ☕ Java
+
+```java
+import java.util.*;
+
+class Solution {
+    public boolean checkStrings(String s1, String s2) {
+        List<Character> e1 = new ArrayList<>();
+        List<Character> e2 = new ArrayList<>();
+        List<Character> o1 = new ArrayList<>();
+        List<Character> o2 = new ArrayList<>();
+
+        for (int i = 0; i < s1.length(); i++) {
+            if (i % 2 == 0) {
+                e1.add(s1.charAt(i));
+                e2.add(s2.charAt(i));
+            } else {
+                o1.add(s1.charAt(i));
+                o2.add(s2.charAt(i));
+            }
+        }
+
+        Collections.sort(e1);
+        Collections.sort(e2);
+        Collections.sort(o1);
+        Collections.sort(o2);
+
+        return e1.equals(e2) && o1.equals(o2);
+    }
+}
+```
+
+### 🐍 Python3
+
+```python
+class Solution:
+    def checkStrings(self, s1: str, s2: str) -> bool:
+        e1, e2 = [], []
+        o1, o2 = [], []
+
+        for i in range(len(s1)):
+            if i % 2 == 0:
+                e1.append(s1[i])
+                e2.append(s2[i])
+            else:
+                o1.append(s1[i])
+                o2.append(s2[i])
+
+        return sorted(e1) == sorted(e2) and sorted(o1) == sorted(o2)
+```
+
+---
+
+# ⚡ Approach 2: Frequency Count (4 Arrays)
+
+## 💡 Idea
+
+* Count frequency of characters separately for:
+
+  * even indices (s1 & s2)
+  * odd indices (s1 & s2)
+
+### ⏱ Complexity
+
+* Time: `O(n)`
+* Space: `O(1)`
+
+### ☕ Java
+
+```java
+class Solution {
+    public boolean checkStrings(String s1, String s2) {
+        int[] even1 = new int[26];
+        int[] odd1 = new int[26];
+        int[] even2 = new int[26];
+        int[] odd2 = new int[26];
+
+        for (int i = 0; i < s1.length(); i++) {
+            if (i % 2 == 0) {
+                even1[s1.charAt(i) - 'a']++;
+                even2[s2.charAt(i) - 'a']++;
+            } else {
+                odd1[s1.charAt(i) - 'a']++;
+                odd2[s2.charAt(i) - 'a']++;
+            }
+        }
+
+        for (int i = 0; i < 26; i++) {
+            if (even1[i] != even2[i] || odd1[i] != odd2[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+```
+
+### 🐍 Python3
+
+```python
+class Solution:
+    def checkStrings(self, s1: str, s2: str) -> bool:
+        even1 = [0] * 26
+        odd1 = [0] * 26
+        even2 = [0] * 26
+        odd2 = [0] * 26
+
+        for i in range(len(s1)):
+            if i % 2 == 0:
+                even1[ord(s1[i]) - ord('a')] += 1
+                even2[ord(s2[i]) - ord('a')] += 1
+            else:
+                odd1[ord(s1[i]) - ord('a')] += 1
+                odd2[ord(s2[i]) - ord('a')] += 1
+
+        for i in range(26):
+            if even1[i] != even2[i] or odd1[i] != odd2[i]:
+                return False
+
+        return True
+```
+
+---
+
+# 🔥 Approach 3: Optimized Frequency (2 Arrays)
+
+## 💡 Idea
+
+* Use only 2 arrays:
+
+  * Increment for `s1`
+  * Decrement for `s2`
+* If all values become `0` → valid
+
+### ⏱ Complexity
+
+* Time: `O(n)`
+* Space: `O(1)`
+
+### ☕ Java
+
+```java
+class Solution {
+    public boolean checkStrings(String s1, String s2) {
+        int[] even = new int[26];
+        int[] odd = new int[26];
+
+        for (int i = 0; i < s1.length(); i++) {
+            if (i % 2 == 0) {
+                even[s1.charAt(i) - 'a']++;
+                even[s2.charAt(i) - 'a']--;
+            } else {
+                odd[s1.charAt(i) - 'a']++;
+                odd[s2.charAt(i) - 'a']--;
+            }
+        }
+
+        for (int i = 0; i < 26; i++) {
+            if (even[i] != 0 || odd[i] != 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+```
+
+### 🐍 Python3
+
+```python
+class Solution:
+    def checkStrings(self, s1: str, s2: str) -> bool:
+        even = [0] * 26
+        odd = [0] * 26
+
+        for i in range(len(s1)):
+            if i % 2 == 0:
+                even[ord(s1[i]) - ord('a')] += 1
+                even[ord(s2[i]) - ord('a')] -= 1
+            else:
+                odd[ord(s1[i]) - ord('a')] += 1
+                odd[ord(s2[i]) - ord('a')] -= 1
+
+        return all(x == 0 for x in even) and all(x == 0 for x in odd)
+```
+
+---
+
+# ✅ Summary
+
+| Approach | Time       | Space | Notes       |
+| -------- | ---------- | ----- | ----------- |
+| Sorting  | O(n log n) | O(n)  | Easy        |
+| 4 Arrays | O(n)       | O(1)  | Clear logic |
+| 2 Arrays | O(n)       | O(1)  | 🚀 Best     |
+
+---
