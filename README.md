@@ -10,7 +10,7 @@ This repository contains my daily solutions to LeetCode problems, organized **mo
 
 ## 📅 Structure
 
-All solutions are organized by **Year → Month → Date → Problem**.
+All solutions are organized by **Year → Month → Day → Problem**.
 
 Each problem folder contains:
 - 📄 Problem explanation
