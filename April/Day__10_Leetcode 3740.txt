@@ -1,0 +1,308 @@
+
+# 📌 LeetCode 3740 — Minimum Distance Between Three Equal Elements I
+
+---
+
+## 🟢 Problem Summary
+3740. Minimum Distance Between Three Equal Elements I
+
+You are given an integer array nums.
+
+A tuple (i, j, k) of 3 distinct indices is good if nums[i] == nums[j] == nums[k].
+
+The distance of a good tuple is abs(i - j) + abs(j - k) + abs(k - i), where abs(x) denotes the absolute value of x.
+
+Return an integer denoting the minimum possible distance of a good tuple. If no good tuples exist, return -1.
+
+ 
+
+Example 1:
+
+Input: nums = [1,2,1,1,3]
+
+Output: 6
+
+Explanation:
+
+The minimum distance is achieved by the good tuple (0, 2, 3).
+
+(0, 2, 3) is a good tuple because nums[0] == nums[2] == nums[3] == 1. Its distance is abs(0 - 2) + abs(2 - 3) + abs(3 - 0) = 2 + 1 + 3 = 6.
+
+Example 2:
+
+Input: nums = [1,1,2,3,2,1,2]
+
+Output: 8
+
+Explanation:
+
+The minimum distance is achieved by the good tuple (2, 4, 6).
+
+(2, 4, 6) is a good tuple because nums[2] == nums[4] == nums[6] == 2. Its distance is abs(2 - 4) + abs(4 - 6) + abs(6 - 2) = 2 + 2 + 4 = 8.
+
+Example 3:
+
+Input: nums = [1]
+
+Output: -1
+
+Explanation:
+
+There are no good tuples. Therefore, the answer is -1.
+
+ 
+
+Constraints:
+
+1 <= n == nums.length <= 100
+1 <= nums[i] <= n
+
+
+You are given an integer array `nums`.
+
+A tuple `(i, j, k)` is considered **good** if:
+
+* `i`, `j`, `k` are distinct indices
+* `nums[i] == nums[j] == nums[k]`
+
+### 📏 Distance Definition
+
+```
+abs(i - j) + abs(j - k) + abs(k - i)
+```
+
+### 🎯 Goal
+
+Return the **minimum distance** among all good tuples.
+If no such tuple exists, return `-1`.
+
+---
+
+## 🧪 Examples
+
+### Example 1
+
+```
+Input: nums = [1,2,1,1,3]
+Output: 6
+```
+
+### Example 2
+
+```
+Input: nums = [1,1,2,3,2,1,2]
+Output: 8
+```
+
+### Example 3
+
+```
+Input: nums = [1]
+Output: -1
+```
+
+---
+
+## ⚙️ Constraints
+
+* `1 <= nums.length <= 100`
+* `1 <= nums[i] <= n`
+
+---
+
+# 🧠 Approach 1 — Brute Force (Your Approach)
+
+### 💡 Idea
+
+* Try **all possible triplets (i, j, k)**
+* Check if values are equal
+* Compute distance and track minimum
+
+---
+
+### 🚀 Algorithm
+
+1. Loop through all `i`
+2. Loop through all `j > i`
+3. Loop through all `k > j`
+4. Check:
+
+   ```
+   nums[i] == nums[j] == nums[k]
+   ```
+5. Compute distance
+6. Keep minimum
+
+---
+
+### 🧾 Java Code (Your Approach)
+
+```java
+class Solution {
+    public int minimumDistance(int[] nums) {
+        int n = nums.length;
+        int dis = Integer.MAX_VALUE;
+        boolean found = false;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                for (int k = j + 1; k < n; k++) {
+                    if (nums[i] == nums[j] && nums[j] == nums[k]) {
+                        found = true;
+                        int curr = Math.abs(i - j) + Math.abs(j - k) + Math.abs(k - i);
+                        dis = Math.min(dis, curr);
+                    }
+                }
+            }
+        }
+        return found ? dis : -1;
+    }
+}
+```
+
+---
+
+### 🐍 Python Code (Your Approach)
+
+```python
+from typing import List
+
+class Solution:
+    def minimumDistance(self, nums: List[int]) -> int:
+        n = len(nums)
+        dis = float('inf')
+        found = False
+
+        for i in range(n):
+            for j in range(i + 1, n):
+                for k in range(j + 1, n):
+                    if nums[i] == nums[j] and nums[j] == nums[k]:
+                        found = True
+                        curr = abs(i - j) + abs(j - k) + abs(k - i)
+                        dis = min(dis, curr)
+
+        return dis if found else -1
+```
+
+---
+
+### ⏱️ Complexity (Brute Force)
+
+| Type  | Complexity |
+| ----- | ---------- |
+| Time  | **O(n³)**  |
+| Space | **O(1)**   |
+
+✅ Works because `n ≤ 100`
+
+---
+
+# 🚀 Approach 2 — Optimized (HashMap + Indexing)
+
+### 💡 Key Idea
+
+* Store indices of each number
+* Only consider numbers with frequency ≥ 3
+* Check **consecutive triples only**
+
+---
+
+### 🧠 Important Observation
+
+For:
+
+```
+i < j < k
+```
+
+Distance becomes:
+
+```
+|i-j| + |j-k| + |k-i| = 2 * (k - i)
+```
+
+👉 So we only need **first and third index**
+
+---
+
+### 🧾 Java Code (Optimized)
+
+```java
+import java.util.*;
+
+class Solution {
+    public int minimumDistance(int[] nums) {
+        Map<Integer, List<Integer>> map = new HashMap<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            map.computeIfAbsent(nums[i], k -> new ArrayList<>()).add(i);
+        }
+
+        int min = Integer.MAX_VALUE;
+
+        for (List<Integer> list : map.values()) {
+            if (list.size() < 3) continue;
+
+            for (int i = 0; i <= list.size() - 3; i++) {
+                int a = list.get(i);
+                int c = list.get(i + 2);
+
+                int diff = 2 * (c - a);
+                min = Math.min(min, diff);
+            }
+        }
+
+        return min == Integer.MAX_VALUE ? -1 : min;
+    }
+}
+```
+
+---
+
+### 🐍 Python Code (Optimized)
+
+```python
+from typing import List
+from collections import defaultdict
+
+class Solution:
+    def minimumDistance(self, nums: List[int]) -> int:
+        mp = defaultdict(list)
+
+        for i in range(len(nums)):
+            mp[nums[i]].append(i)
+
+        min_val = float('inf')
+
+        for lst in mp.values():
+            if len(lst) < 3:
+                continue
+
+            for i in range(len(lst) - 2):
+                a = lst[i]
+                c = lst[i + 2]
+
+                diff = 2 * (c - a)
+                min_val = min(min_val, diff)
+
+        return -1 if min_val == float('inf') else min_val
+```
+
+---
+
+## ⏱️ Complexity (Optimized)
+
+| Type  | Complexity |
+| ----- | ---------- |
+| Time  | **O(n)**   |
+| Space | **O(n)**   |
+
+---
+
+## 🔥 Comparison
+
+| Approach    | Time  | Space | Notes                     |
+| ----------- | ----- | ----- | ------------------------- |
+| Brute Force | O(n³) | O(1)  | Simple, works for small n |
+| Optimized   | O(n)  | O(n)  | Efficient and scalable    |
+
