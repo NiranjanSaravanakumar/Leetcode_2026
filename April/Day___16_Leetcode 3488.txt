@@ -1,0 +1,271 @@
+
+# 🧠 LeetCode 3488 – Solve Queries
+
+## 📌 Problem Summary
+3488. Closest Equal Element Queries
+
+You are given a circular array nums and an array queries.
+
+For each query i, you have to find the following:
+
+The minimum distance between the element at index queries[i] and any other index j in the circular array, where nums[j] == nums[queries[i]]. If no such index exists, the answer for that query should be -1.
+Return an array answer of the same size as queries, where answer[i] represents the result for query i.
+
+ 
+
+Example 1:
+
+Input: nums = [1,3,1,4,1,3,2], queries = [0,3,5]
+
+Output: [2,-1,3]
+
+Explanation:
+
+Query 0: The element at queries[0] = 0 is nums[0] = 1. The nearest index with the same value is 2, and the distance between them is 2.
+Query 1: The element at queries[1] = 3 is nums[3] = 4. No other index contains 4, so the result is -1.
+Query 2: The element at queries[2] = 5 is nums[5] = 3. The nearest index with the same value is 1, and the distance between them is 3 (following the circular path: 5 -> 6 -> 0 -> 1).
+Example 2:
+
+Input: nums = [1,2,3,4], queries = [0,1,2,3]
+
+Output: [-1,-1,-1,-1]
+
+Explanation:
+
+Each value in nums is unique, so no index shares the same value as the queried element. This results in -1 for all queries.
+
+ 
+
+Constraints:
+
+1 <= queries.length <= nums.length <= 105
+1 <= nums[i] <= 106
+0 <= queries[i] < nums.length
+ 
+Here’s a clean **GitHub README.md** for **LeetCode 3488 – Solve Queries** with both approaches and Java + Python implementations.
+
+---
+
+
+## 💡 Key Concept
+
+The array is **circular**, so distance between indices `i` and `j` is:
+
+```
+min(|i - j|, n - |i - j|)
+```
+
+---
+
+# 🚀 Approach 1: Binary Search (Per Query)
+
+## 🔹 Idea
+
+* Store all indices of each value.
+* For each query:
+
+  * Find position of index using **binary search**
+  * Check nearest left and right neighbors
+  * Compute circular distance
+
+## ⏱ Complexity
+
+* Time: **O(n + q log k)**
+* Space: **O(n)**
+
+---
+
+## ✅ Python 3
+
+```python
+from collections import defaultdict
+import bisect
+from typing import List
+
+class Solution:
+    def solveQueries(self, nums: List[int], queries: List[int]) -> List[int]:
+        n = len(nums)
+        
+        mp = defaultdict(list)
+        for i, num in enumerate(nums):
+            mp[num].append(i)
+        
+        res = []
+        
+        for q in queries:
+            val = nums[q]
+            lst = mp[val]
+            
+            if len(lst) == 1:
+                res.append(-1)
+                continue
+            
+            idx = bisect.bisect_left(lst, q)
+            size = len(lst)
+            
+            prev = lst[(idx - 1 + size) % size]
+            next_ = lst[(idx + 1) % size]
+            
+            dist_prev = min(abs(q - prev), n - abs(q - prev))
+            dist_next = min(abs(q - next_), n - abs(q - next_))
+            
+            res.append(min(dist_prev, dist_next))
+        
+        return res
+```
+
+---
+
+## ✅ Java
+
+```java
+import java.util.*;
+
+class Solution {
+    public List<Integer> solveQueries(int[] nums, int[] queries) {
+        int n = nums.length;
+
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            map.computeIfAbsent(nums[i], x -> new ArrayList<>()).add(i);
+        }
+
+        List<Integer> res = new ArrayList<>();
+
+        for (int q : queries) {
+            int val = nums[q];
+            List<Integer> list = map.get(val);
+
+            if (list.size() == 1) {
+                res.add(-1);
+                continue;
+            }
+
+            int idx = Collections.binarySearch(list, q);
+            int size = list.size();
+
+            int prev = list.get((idx - 1 + size) % size);
+            int next = list.get((idx + 1) % size);
+
+            int distPrev = Math.min(Math.abs(q - prev), n - Math.abs(q - prev));
+            int distNext = Math.min(Math.abs(q - next), n - Math.abs(q - next));
+
+            res.add(Math.min(distPrev, distNext));
+        }
+
+        return res;
+    }
+}
+```
+
+---
+
+# ⚡ Approach 2: Precomputation (Optimized)
+
+## 🔹 Idea
+
+* Instead of solving each query separately:
+
+  * Precompute answer for every index
+  * Use circular neighbors in index list
+* Then answer queries in **O(1)**
+
+## ⏱ Complexity
+
+* Time: **O(n + q)**
+* Space: **O(n)**
+
+---
+
+## ✅ Python 3
+
+```python
+from collections import defaultdict
+from typing import List
+
+class Solution:
+    def solveQueries(self, nums: List[int], queries: List[int]) -> List[int]:
+        n = len(nums)
+        
+        mp = defaultdict(list)
+        for i, num in enumerate(nums):
+            mp[num].append(i)
+        
+        ans = [-1] * n
+        
+        for lst in mp.values():
+            if len(lst) == 1:
+                continue
+            
+            size = len(lst)
+            
+            for i in range(size):
+                curr = lst[i]
+                prev = lst[(i - 1 + size) % size]
+                next_ = lst[(i + 1) % size]
+                
+                dist_prev = min(abs(curr - prev), n - abs(curr - prev))
+                dist_next = min(abs(curr - next_), n - abs(curr - next_))
+                
+                ans[curr] = min(dist_prev, dist_next)
+        
+        return [ans[q] for q in queries]
+```
+
+---
+
+## ✅ Java
+
+```java
+import java.util.*;
+
+class Solution {
+    public List<Integer> solveQueries(int[] nums, int[] queries) {
+        int n = nums.length;
+
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            map.computeIfAbsent(nums[i], x -> new ArrayList<>()).add(i);
+        }
+
+        int[] ans = new int[n];
+        Arrays.fill(ans, -1);
+
+        for (List<Integer> list : map.values()) {
+            if (list.size() == 1) continue;
+
+            int size = list.size();
+
+            for (int i = 0; i < size; i++) {
+                int curr = list.get(i);
+                int prev = list.get((i - 1 + size) % size);
+                int next = list.get((i + 1) % size);
+
+                int distPrev = Math.min(Math.abs(curr - prev), n - Math.abs(curr - prev));
+                int distNext = Math.min(Math.abs(curr - next), n - Math.abs(curr - next));
+
+                ans[curr] = Math.min(distPrev, distNext);
+            }
+        }
+
+        List<Integer> res = new ArrayList<>();
+        for (int q : queries) {
+            res.add(ans[q]);
+        }
+
+        return res;
+    }
+}
+```
+
+---
+
+# 🆚 Comparison
+
+| Approach      | Time Complexity | Query Time | Notes                  |
+| ------------- | --------------- | ---------- | ---------------------- |
+| Binary Search | O(n + q log n)  | O(log n)   | Simple                 |
+| Precompute    | O(n + q)        | O(1)       | Best for large queries |
+
+---
+ or format this exactly for **your GitHub repo style**
