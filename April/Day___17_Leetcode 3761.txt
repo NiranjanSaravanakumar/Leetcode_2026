@@ -1,0 +1,180 @@
+---
+
+#  Leetcode 3761
+🪞 Minimum Absolute Distance Between Mirror Pairs
+
+## 📌 Problem Statement
+
+3761. Minimum Absolute Distance Between Mirror Pairs
+
+You are given an integer array nums.
+
+A mirror pair is a pair of indices (i, j) such that:
+
+0 <= i < j < nums.length, and
+reverse(nums[i]) == nums[j], where reverse(x) denotes the integer formed by reversing the digits of x. Leading zeros are omitted after reversing, for example reverse(120) = 21.
+Return the minimum absolute distance between the indices of any mirror pair. The absolute distance between indices i and j is abs(i - j).
+
+If no mirror pair exists, return -1.
+
+ 
+
+Example 1:
+
+Input: nums = [12,21,45,33,54]
+
+Output: 1
+
+Explanation:
+
+The mirror pairs are:
+
+(0, 1) since reverse(nums[0]) = reverse(12) = 21 = nums[1], giving an absolute distance abs(0 - 1) = 1.
+(2, 4) since reverse(nums[2]) = reverse(45) = 54 = nums[4], giving an absolute distance abs(2 - 4) = 2.
+The minimum absolute distance among all pairs is 1.
+
+Example 2:
+
+Input: nums = [120,21]
+
+Output: 1
+
+Explanation:
+
+There is only one mirror pair (0, 1) since reverse(nums[0]) = reverse(120) = 21 = nums[1].
+
+The minimum absolute distance is 1.
+
+Example 3:
+
+Input: nums = [21,120]
+
+Output: -1
+
+Explanation:
+
+There are no mirror pairs in the array.
+
+ 
+
+Constraints:
+
+1 <= nums.length <= 105
+1 <= nums[i] <= 109​​​​​​​
+
+
+Here’s a clean and professional **GitHub README.md** for your solution:
+
+
+
+## 🧠 Approach
+
+We use a **HashMap (Dictionary)** to efficiently track previously seen reversed numbers.
+
+### Key Idea:
+
+* Instead of storing the number, store its **reversed value as key**
+* While iterating:
+
+  * Check if current number exists in the map
+  * If yes → we found a mirror pair
+  * Compute distance and update minimum
+* Store the reversed value of the current number in the map
+
+---
+
+## ⚙️ Algorithm Steps
+
+1. Initialize:
+
+   * `map` → stores `{reversed_number: index}`
+   * `minDistance = ∞`
+
+2. Traverse the array:
+
+   * Reverse current number
+   * If current number exists in map:
+
+     * Calculate distance
+     * Update minimum
+   * Store reversed number in map
+
+3. Return:
+
+   * `-1` if no pair found
+   * Else return minimum distance
+
+---
+
+## ⏱️ Complexity Analysis
+
+| Type  | Complexity                           |
+| ----- | ------------------------------------ |
+| Time  | **O(n × d)** (d = digits per number) |
+| Space | **O(n)**                             |
+
+---
+
+## 💻 Java Implementation
+
+```java
+class Solution {
+    public int minMirrorPairDistance(int[] nums) {
+        HashMap<Integer, Integer> map = new HashMap<>();
+        int minDistance = Integer.MAX_VALUE;
+
+        for (int i = 0; i < nums.length; i++) {
+            int reversed = reverse(nums[i]);
+
+            if (map.containsKey(nums[i])) {
+                int distance = i - map.get(nums[i]);
+                minDistance = Math.min(minDistance, distance);
+            }
+
+            map.put(reversed, i);
+        }
+
+        return minDistance == Integer.MAX_VALUE ? -1 : minDistance;
+    }
+
+    private int reverse(int num) {
+        int reversedNumber = 0;
+        while (num > 0) {
+            reversedNumber = reversedNumber * 10 + (num % 10);
+            num /= 10;
+        }
+        return reversedNumber;
+    }
+}
+```
+
+---
+
+## 🐍 Python Implementation
+
+```python
+from typing import List
+
+class Solution:
+    def minMirrorPairDistance(self, nums: List[int]) -> int:
+        index_map = {}
+        min_distance = float('inf')
+
+        for i in range(len(nums)):
+            reversed_num = self.reverse(nums[i])
+
+            if nums[i] in index_map:
+                distance = i - index_map[nums[i]]
+                min_distance = min(min_distance, distance)
+
+            index_map[reversed_num] = i
+
+        return -1 if min_distance == float('inf') else min_distance
+
+    def reverse(self, num: int) -> int:
+        reversed_number = 0
+        while num > 0:
+            reversed_number = reversed_number * 10 + (num % 10)
+            num //= 10
+        return reversed_number
+```
