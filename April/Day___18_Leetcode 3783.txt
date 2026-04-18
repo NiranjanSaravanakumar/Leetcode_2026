@@ -1,0 +1,169 @@
+
+# 🪞 Mirror Distance of an Integer (LeetCode 3783)
+
+## 📌 Problem Statement
+
+3783. Mirror Distance of an Integer
+
+You are given an integer n.
+
+Define its mirror distance as: abs(n - reverse(n))​​​​​​​ where reverse(n) is the integer formed by reversing the digits of n.
+
+Return an integer denoting the mirror distance of n​​​​​​​.
+
+abs(x) denotes the absolute value of x.
+
+ 
+
+Example 1:
+
+Input: n = 25
+
+Output: 27
+
+Explanation:
+
+reverse(25) = 52.
+Thus, the answer is abs(25 - 52) = 27.
+Example 2:
+
+Input: n = 10
+
+Output: 9
+
+Explanation:
+
+reverse(10) = 01 which is 1.
+Thus, the answer is abs(10 - 1) = 9.
+Example 3:
+
+Input: n = 7
+
+Output: 0
+
+Explanation:
+
+reverse(7) = 7.
+Thus, the answer is abs(7 - 7) = 0.
+ 
+
+Constraints:
+1 <= n <= 109
+
+
+## 💡 Intuition
+
+To compute the mirror distance:
+
+1. Reverse the digits of the number
+2. Subtract the reversed number from the original
+3. Take the absolute value
+
+---
+
+## ⚙️ Approach 1: Using Helper Function
+
+### 🔹 Algorithm
+
+1. Create a helper function `reverse(n)`
+2. Extract digits using `% 10`
+3. Build reversed number using `rev = rev * 10 + digit`
+4. Return `abs(n - reverse(n))`
+
+### ⏱️ Complexity
+
+* **Time:** `O(d)` (where `d` = number of digits)
+* **Space:** `O(1)`
+
+### ☕ Java Code
+
+```java
+class Solution {
+    public int mirrorDistance(int n) {
+        int rev = reverse(n);
+        return Math.abs(n - rev);
+    }
+
+    private int reverse(int num) {
+        int reversedNumber = 0;
+
+        while (num > 0) {
+            reversedNumber = reversedNumber * 10 + (num % 10);
+            num /= 10;
+        }
+
+        return reversedNumber;
+    }
+}
+```
+
+### 🐍 Python Code
+
+```python
+class Solution:
+    def mirrorDistance(self, n: int) -> int:
+        rev = self.reverse(n)
+        return abs(n - rev)
+
+    def reverse(self, num: int) -> int:
+        rev = 0
+        while num > 0:
+            rev = rev * 10 + (num % 10)
+            num //= 10
+        return rev
+```
+
+---
+
+## ⚙️ Approach 2: Inline Reversal (Optimized)
+
+### 🔹 Algorithm
+
+1. Initialize `rev = 0`
+2. Iterate while `n > 0`
+3. Build reversed number directly
+4. Return `abs(original - reversed)`
+
+### ✅ Why this is better?
+
+* Eliminates helper function
+* Slightly cleaner and more concise
+* Same efficiency
+
+### ⏱️ Complexity
+
+* **Time:** `O(d)`
+* **Space:** `O(1)`
+
+### ☕ Java Code
+
+```java
+class Solution {
+    public int mirrorDistance(int n) {
+        int num = n;
+        int reversedNumber = 0;
+
+        while (num > 0) {
+            reversedNumber = reversedNumber * 10 + (num % 10);
+            num /= 10;
+        }
+
+        return Math.abs(n - reversedNumber);
+    }
+}
+```
+
+### 🐍 Python Code
+
+```python
+class Solution:
+    def mirrorDistance(self, n: int) -> int:
+        num = n
+        rev = 0
+
+        while num > 0:
+            rev = rev * 10 + (num % 10)
+            num //= 10
+
+        return abs(n - rev)
+```
