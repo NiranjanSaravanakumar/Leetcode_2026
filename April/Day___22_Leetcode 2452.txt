@@ -1,0 +1,156 @@
+
+# 📘 2452. Words Within Two Edits of Dictionary
+
+## 🧩 Problem Statement
+
+2452. Words Within Two Edits of Dictionary
+
+You are given two string arrays, queries and dictionary. All words in each array comprise of lowercase English letters and have the same length.
+In one edit you can take a word from queries, and change any letter in it to any other letter. 
+Find all words from queries that, after a maximum of two edits, equal some word from dictionary.
+Return a list of all words from queries, that match with some word from dictionary after a maximum of two edits.
+Return the words in the same order they appear in queries.
+
+ 
+
+Example 1:
+Input: queries = ["word","note","ants","wood"], dictionary = ["wood","joke","moat"]
+Output: ["word","note","wood"]
+Explanation:
+- Changing the 'r' in "word" to 'o' allows it to equal the dictionary word "wood".
+- Changing the 'n' to 'j' and the 't' to 'k' in "note" changes it to "joke".
+- It would take more than 2 edits for "ants" to equal a dictionary word.
+- "wood" can remain unchanged (0 edits) and match the corresponding dictionary word.
+Thus, we return ["word","note","wood"].
+
+Example 2:
+Input: queries = ["yes"], dictionary = ["not"]
+Output: []
+Explanation:
+Applying any two edits to "yes" cannot make it equal to "not". Thus, we return an empty array.
+ 
+
+Constraints:
+
+1 <= queries.length, dictionary.length <= 100
+n == queries[i].length == dictionary[j].length
+1 <= n <= 100
+All queries[i] and dictionary[j] are composed of lowercase English letters.
+
+## 🧠 Intuition
+
+To transform one word into another with at most 2 edits:
+
+* Count how many characters differ between them.
+* If the difference is ≤ 2 → it's valid.
+
+This is essentially checking **Hamming Distance ≤ 2**.
+
+---
+
+## 🚀 Approach
+
+1. Iterate through each word in `queries`.
+2. For each query, compare it with every word in `dictionary`.
+3. Count character differences:
+
+   * If differences exceed 2 → stop early (optimization).
+4. If any dictionary word matches within 2 edits:
+
+   * Add query to result.
+   * Stop checking further dictionary words.
+
+---
+
+## ⚡ Optimization
+
+* Use **early break** when mismatches exceed 2.
+* Stop checking dictionary once a valid match is found.
+
+---
+
+## ⏱ Complexity
+
+| Type  | Complexity   |
+| ----- | ------------ |
+| Time  | O(q × d × n) |
+| Space | O(1)         |
+
+Where:
+
+* `q = len(queries)`
+* `d = len(dictionary)`
+* `n = length of each word`
+
+---
+
+## 💻 Java Solution
+
+```java
+class Solution {
+    public List<String> twoEditWords(String[] queries, String[] dictionary) {
+        List<String> res = new ArrayList<>();
+
+        for (String query : queries) {
+            for (String word : dictionary) {
+                int diff = 0;
+
+                for (int i = 0; i < query.length(); i++) {
+                    if (query.charAt(i) != word.charAt(i)) {
+                        diff++;
+                        if (diff > 2) break; // early stop
+                    }
+                }
+
+                if (diff <= 2) {
+                    res.add(query);
+                    break; // move to next query
+                }
+            }
+        }
+
+        return res;
+    }
+}
+```
+
+---
+
+## 🐍 Python Solution
+
+```python
+from typing import List
+
+class Solution:
+    def twoEditWords(self, queries: List[str], dictionary: List[str]) -> List[str]:
+        res = []
+
+        for query in queries:
+            for word in dictionary:
+                diff = 0
+
+                for i in range(len(query)):
+                    if query[i] != word[i]:
+                        diff += 1
+                        if diff > 2:
+                            break
+
+                if diff <= 2:
+                    res.append(query)
+                    break
+
+        return res
+```
+
+---
+
+## ✨ Pythonic One-Liner
+
+```python
+class Solution:
+    def twoEditWords(self, queries, dictionary):
+        return [
+            q for q in queries
+            if any(sum(a != b for a, b in zip(q, w)) <= 2 for w in dictionary)
+        ]
+```
