@@ -1,0 +1,240 @@
+
+# 🚀 LeetCode 3464 – Maximize the Distance Between Points on a Square
+
+## 🧩 Problem Summary
+
+3464. Maximize the Distance Between Points on a Square
+
+You are given an integer side, representing the edge length of a square with corners at (0, 0), (0, side), (side, 0), and (side, side) on a Cartesian plane.
+You are also given a positive integer k and a 2D integer array points, where points[i] = [xi, yi] represents the coordinate of a point lying on the boundary of the square.
+You need to select k elements among points such that the minimum Manhattan distance between any two points is maximized.
+Return the maximum possible minimum Manhattan distance between the selected k points.
+The Manhattan Distance between two cells (xi, yi) and (xj, yj) is |xi - xj| + |yi - yj|.
+
+ 
+
+Example 1:
+Input: side = 2, points = [[0,2],[2,0],[2,2],[0,0]], k = 4
+Output: 2
+
+
+Example 2:
+Input: side = 2, points = [[0,0],[1,2],[2,0],[2,2],[2,1]], k = 4
+Output: 1
+
+
+Example 3:
+Input: side = 2, points = [[0,0],[0,1],[0,2],[1,2],[2,0],[2,2],[2,1]], k = 5
+Output: 1
+
+
+Constraints:
+
+1 <= side <= 109
+4 <= points.length <= min(4 * side, 15 * 103)
+points[i] == [xi, yi]
+The input is generated such that:
+points[i] lies on the boundary of the square.
+All points[i] are unique.
+4 <= k <= min(25, points.length)
+
+## 💡 Key Insight
+
+Since all points lie on the **boundary of the square**, we can:
+➡️ Convert 2D points → **1D positions on the square perimeter**
+
+This transforms the problem into:
+
+> **Pick k points on a circular line such that minimum distance is maximized**
+
+---
+
+## 🔄 Step 1: Convert 2D → 1D (Perimeter Mapping)
+
+We traverse the square boundary in order:
+
+```
+(0,0) → (0,side) → (side,side) → (side,0) → (0,0)
+```
+
+Mapping logic:
+
+| Condition | Position   |
+| --------- | ---------- |
+| x == 0    | y          |
+| y == side | side + x   |
+| x == side | 3*side - y |
+| else      | 4*side - x |
+
+---
+
+## 🔍 Step 2: Binary Search on Answer
+
+We try to maximize the minimum distance `d`.
+
+* `low = 1`
+* `high = 2 * side`
+* For each `mid`, check if it's possible
+
+---
+
+## ✅ Step 3: Greedy Validation
+
+For a fixed distance `d`:
+
+* Start from each point
+* Keep picking the **next valid point ≥ current + d**
+* If we can pick `k` points → valid
+
+---
+
+## ⚡ Approach Complexity
+
+* Sorting: `O(n log n)`
+* Binary Search: `O(log side)`
+* Validation: `O(n * k log n)`
+
+👉 Total: **Efficient for constraints**
+
+---
+
+# 🧑‍💻 Java Solution
+
+```java
+import java.util.*;
+
+class Solution {
+    public int maxDistance(int side, int[][] points, int k) {
+        
+        List<Long> arr = new ArrayList<>();
+
+        for(int p[] : points) {
+            int x = p[0], y = p[1];
+            if(x==0)         arr.add((long)y);
+            else if(y==side) arr.add((long)side + x);
+            else if(x==side) arr.add(3L*side - y);
+            else             arr.add(4L*side - x); 
+        }
+
+        Collections.sort(arr);
+
+        long low = 1, high = 2L * side;
+        int ans = 0;
+
+        while(low <= high) {
+            long mid = low + (high-low)/2;
+            
+            if(isValid(arr, side, k, mid)) {
+                ans = (int)mid;
+                low = mid+1;
+            } else {
+                high = mid-1;
+            }
+        }
+
+        return ans;
+    }
+
+    boolean isValid(List<Long> arr, int side, int k, long dist) {
+        long peri = 4L * side;
+
+        for(int i=0; i<arr.size(); i++) {
+            long start = arr.get(i);
+            long end = start + peri - dist;
+
+            for(int j=0; j<k-1; j++) {
+                int next = lower(arr, start+dist);
+
+                if(next >= arr.size() || arr.get(next) > end) {
+                    start = -1;
+                    break;
+                }
+                start = arr.get(next);                    
+            }
+
+            if(start >= 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    int lower(List<Long> arr, long target) {
+        int low = 0, high = arr.size();
+        while(low < high) {
+            int mid = low + (high-low)/2;
+            if(arr.get(mid) < target)  
+                low = mid+1;
+            else
+                high = mid;
+        }
+        return low;
+    }
+}
+```
+
+---
+
+# 🐍 Python3 Solution
+
+```python
+from bisect import bisect_left
+from typing import List
+
+class Solution:
+    def maxDistance(self, side: int, points: List[List[int]], k: int) -> int:
+        
+        arr = []
+
+        for x, y in points:
+            if x == 0:
+                arr.append(y)
+            elif y == side:
+                arr.append(side + x)
+            elif x == side:
+                arr.append(3 * side - y)
+            else:
+                arr.append(4 * side - x)
+
+        arr.sort()
+
+        low, high = 1, 2 * side
+        ans = 0
+
+        while low <= high:
+            mid = (low + high) // 2
+
+            if self.isValid(arr, side, k, mid):
+                ans = mid
+                low = mid + 1
+            else:
+                high = mid - 1
+
+        return ans
+
+    def isValid(self, arr, side, k, dist):
+        peri = 4 * side
+        n = len(arr)
+
+        for i in range(n):
+            start = arr[i]
+            end = start + peri - dist
+            curr = start
+
+            for _ in range(k - 1):
+                idx = bisect_left(arr, curr + dist)
+
+                if idx >= n or arr[idx] > end:
+                    curr = -1
+                    break
+
+                curr = arr[idx]
+
+            if curr >= 0:
+                return True
+
+        return False
+```
+
+---
+
