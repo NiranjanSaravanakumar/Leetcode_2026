@@ -1,0 +1,154 @@
+# 🧩 2033. Minimum Operations to Make a Uni-Value Grid
+
+## 📌 Problem Statement
+
+2033. Minimum Operations to Make a Uni-Value Grid
+
+You are given a 2D integer grid of size m x n and an integer x. In one operation, you can add x to or subtract x from any element in the grid.
+
+A uni-value grid is a grid where all the elements of it are equal.
+
+Return the minimum number of operations to make the grid uni-value. If it is not possible, return -1.
+
+ 
+
+Example 1:
+Input: grid = [[2,4],[6,8]], x = 2
+Output: 4
+Explanation: We can make every element equal to 4 by doing the following: 
+- Add x to 2 once.
+- Subtract x from 6 once.
+- Subtract x from 8 twice.
+A total of 4 operations were used.
+
+Example 2:
+Input: grid = [[1,5],[2,3]], x = 1
+Output: 5
+Explanation: We can make every element equal to 3.
+
+Example 3:
+Input: grid = [[1,2],[3,4]], x = 2
+Output: -1
+Explanation: It is impossible to make every element equal.
+ 
+
+Constraints:
+
+m == grid.length
+n == grid[i].length
+1 <= m, n <= 105
+1 <= m * n <= 105
+1 <= x, grid[i][j] <= 104
+
+## 💡 Intuition
+
+### 🔑 Key Observations
+
+1. **Operation Constraint**
+
+   * Each move changes a number by `±x`
+   * So all numbers must have the **same remainder when divided by `x`**
+   * If not → ❌ impossible
+
+2. **Optimal Target Value**
+
+   * To minimize total operations:
+     👉 Convert all numbers to the **median**
+   * Why?
+
+     * Median minimizes the **sum of absolute differences**
+
+---
+
+## 🚀 Approach
+
+### Step 1: Flatten the Grid
+
+Convert the 2D grid into a 1D list.
+
+### Step 2: Feasibility Check
+
+Check if all values have the same remainder modulo `x`.
+
+### Step 3: Find Median
+
+* Sort the array OR
+* Use **Quickselect** for O(n)
+
+### Step 4: Count Operations
+
+For each number:
+
+```
+operations += |num - median| / x
+```
+
+---
+
+## 🧮 Complexity
+
+| Approach    | Time Complexity | Space |
+| ----------- | --------------- | ----- |
+| Sorting     | O(n log n)      | O(n)  |
+| Quickselect | O(n) avg        | O(1)  |
+
+---
+
+## 🧑‍💻 Java Solution
+
+```java
+import java.util.*;
+
+class Solution {
+    public int minOperations(int[][] grid, int x) {
+        List<Integer> nums = new ArrayList<>();
+        
+        // Flatten grid
+        for (int[] row : grid) {
+            for (int num : row) {
+                nums.add(num);
+            }
+        }
+
+        // Sort to find median
+        Collections.sort(nums);
+
+        int median = nums.get(nums.size() / 2);
+        int operations = 0;
+
+        for (int num : nums) {
+            // Feasibility check
+            if (num % x != median % x) {
+                return -1;
+            }
+            operations += Math.abs(num - median) / x;
+        }
+
+        return operations;
+    }
+}
+```
+
+---
+
+## 🐍 Python Solution (Sorting)
+
+```python
+from typing import List
+
+class Solution:
+    def minOperations(self, grid: List[List[int]], x: int) -> int:
+        nums = [num for row in grid for num in row]
+        
+        nums.sort()
+        median = nums[len(nums) // 2]
+        
+        operations = 0
+        
+        for num in nums:
+            if num % x != median % x:
+                return -1
+            operations += abs(num - median) // x
+        
+        return operations
+```
