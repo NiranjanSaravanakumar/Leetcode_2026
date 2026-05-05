@@ -1,0 +1,157 @@
+# 🔄 61. Rotate List
+
+### 📌 Problem Statement
+61. Rotate List
+
+Given the head of a linked list, rotate the list to the right by k places.
+
+ 
+
+Example 1:
+Input: head = [1,2,3,4,5], k = 2
+Output: [4,5,1,2,3]
+Example 2:
+
+
+Input: head = [0,1,2], k = 4
+Output: [2,0,1]
+ 
+
+Constraints:
+
+The number of nodes in the list is in the range [0, 500].
+-100 <= Node.val <= 100
+0 <= k <= 2 * 10^9
+
+## 💡 Intuition
+
+Instead of rotating the list one step at a time (which would be inefficient), we:
+
+* Treat the list as **circular**
+* Then break it at the correct position
+
+---
+
+## 🚀 Approach (Efficient)
+
+### Step-by-step:
+
+1. **Edge cases**
+
+   * If list is empty, one node, or `k = 0` → return head
+
+2. **Find length of list**
+
+   * Traverse once to get `len`
+
+3. **Make it circular**
+
+   * Connect last node → head
+
+4. **Reduce unnecessary rotations**
+
+   * `k = k % len`
+   * If `k == 0`, break circle and return head
+
+5. **Find new tail**
+
+   * New tail is at position: `len - k`
+   * Traverse to that node
+
+6. **Break the circle**
+
+   * New head = `newTail.next`
+   * Set `newTail.next = null`
+
+---
+
+## ⏱️ Complexity
+
+* **Time:** `O(n)`
+* **Space:** `O(1)`
+
+---
+
+## 🧩 Java Solution
+
+```java
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        // Edge cases
+        if (head == null || head.next == null || k == 0) return head;
+
+        // 1. Find length
+        ListNode cur = head;
+        int len = 1;
+        while (cur.next != null) {
+            cur = cur.next;
+            len++;
+        }
+
+        // 2. Make circular
+        cur.next = head;
+
+        // 3. Optimize k
+        k = k % len;
+        if (k == 0) {
+            cur.next = null; // break circle
+            return head;
+        }
+
+        // 4. Find new tail (len - k steps)
+        int steps = len - k;
+        ListNode newTail = head;
+        for (int i = 1; i < steps; i++) {
+            newTail = newTail.next;
+        }
+
+        // 5. Break and form new list
+        ListNode newHead = newTail.next;
+        newTail.next = null;
+
+        return newHead;
+    }
+}
+```
+
+---
+
+## 🐍 Python Solution
+
+```python
+class Solution:
+    def rotateRight(self, head, k):
+        # Edge case
+        if not head or not head.next:
+            return head
+
+        # 1. Find length
+        n = 1
+        cur = head
+        while cur.next:
+            cur = cur.next
+            n += 1
+
+        # 2. Make circular
+        cur.next = head
+
+        # 3. Reduce k
+        k %= n
+        if k == 0:
+            cur.next = None
+            return head
+
+        # 4. Find new tail
+        steps = n - k
+        tail = head
+        for _ in range(steps - 1):
+            tail = tail.next
+
+        # 5. New head
+        new_head = tail.next
+
+        # 6. Break circle
+        tail.next = None
+
+        return new_head
+```
