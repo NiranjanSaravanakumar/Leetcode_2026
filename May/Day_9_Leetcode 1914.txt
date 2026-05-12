@@ -1,0 +1,279 @@
+# 1914. Cyclically Rotating a Grid
+
+# Problem Statement
+1914. Cyclically Rotating a Grid
+
+You are given an m x n integer matrix grid​​​, where m and n are both even integers, and an integer k.
+
+The matrix is composed of several layers, which is shown in the below image, where each color is its own layer:
+
+A cyclic rotation of the matrix is done by cyclically rotating each layer in the matrix. To cyclically rotate a layer once,
+each element in the layer will take the place of the adjacent element in the counter-clockwise direction. An example rotation is shown below:
+
+Return the matrix after applying k cyclic rotations to it.
+
+ 
+
+Example 1:
+Input: grid = [[40,10],[30,20]], k = 1
+Output: [[10,20],[40,30]]
+Explanation: The figures above represent the grid at every state.
+
+Example 2:
+Input: grid = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]], k = 2
+Output: [[3,4,8,12],[2,11,10,16],[1,7,6,15],[5,9,13,14]]
+Explanation: The figures above represent the grid at every state.
+ 
+
+Constraints:
+
+m == grid.length
+n == grid[i].length
+2 <= m, n <= 50
+Both m and n are even integers.
+1 <= grid[i][j] <= 5000
+1 <= k <= 10^9
+---
+
+# Intuition
+
+The matrix can be divided into multiple **layers**.
+
+For every layer:
+
+1. Extract all elements of the layer into a list.
+2. Rotate the list by `k`.
+3. Put the rotated values back into the matrix.
+
+Since the rotation is **counter-clockwise**, we shift the elements left by `k`.
+
+---
+
+# Approach
+
+## Step 1: Find Total Layers
+
+```text
+layers = min(m, n) / 2
+```
+
+Each layer is processed independently.
+
+---
+
+## Step 2: Extract Elements
+
+Traverse the boundary of the current layer in this order:
+
+* Top row
+* Right column
+* Bottom row
+* Left column
+
+Store them in an array/list.
+
+---
+
+## Step 3: Rotate the Layer
+
+If layer size is `size`:
+
+```text
+rotation = k % size
+```
+
+Rotate using:
+
+```text
+rotated = arr[rotation:] + arr[:rotation]
+```
+
+---
+
+## Step 4: Fill Back
+
+Traverse the layer again in the same order and place rotated values back into the matrix.
+
+---
+
+# Dry Run
+
+## Input
+
+```text
+grid =
+[
+ [1,2,3,4],
+ [5,6,7,8],
+ [9,10,11,12],
+ [13,14,15,16]
+]
+
+k = 2
+```
+
+---
+
+## Outer Layer Extraction
+
+```text
+[1,2,3,4,8,12,16,15,14,13,9,5]
+```
+
+After rotating by 2:
+
+```text
+[3,4,8,12,16,15,14,13,9,5,1,2]
+```
+
+Fill back into the matrix.
+
+Repeat for inner layer.
+
+---
+
+# Java Solution
+
+```java
+class Solution {
+    public int[][] rotateGrid(int[][] grid, int k) {
+
+        int m = grid.length;
+        int n = grid[0].length;
+
+        int layers = Math.min(m, n) / 2;
+
+        for (int layer = 0; layer < layers; layer++) {
+
+            List<Integer> list = new ArrayList<>();
+
+            int top = layer;
+            int left = layer;
+            int bottom = m - layer - 1;
+            int right = n - layer - 1;
+
+            // top row
+            for (int j = left; j <= right; j++) {
+                list.add(grid[top][j]);
+            }
+
+            // right column
+            for (int i = top + 1; i <= bottom - 1; i++) {
+                list.add(grid[i][right]);
+            }
+
+            // bottom row
+            for (int j = right; j >= left; j--) {
+                list.add(grid[bottom][j]);
+            }
+
+            // left column
+            for (int i = bottom - 1; i >= top + 1; i--) {
+                list.add(grid[i][left]);
+            }
+
+            int size = list.size();
+
+            int rot = k % size;
+
+            List<Integer> rotated = new ArrayList<>();
+
+            rotated.addAll(list.subList(rot, size));
+            rotated.addAll(list.subList(0, rot));
+
+            int idx = 0;
+
+            // fill top row
+            for (int j = left; j <= right; j++) {
+                grid[top][j] = rotated.get(idx++);
+            }
+
+            // fill right column
+            for (int i = top + 1; i <= bottom - 1; i++) {
+                grid[i][right] = rotated.get(idx++);
+            }
+
+            // fill bottom row
+            for (int j = right; j >= left; j--) {
+                grid[bottom][j] = rotated.get(idx++);
+            }
+
+            // fill left column
+            for (int i = bottom - 1; i >= top + 1; i--) {
+                grid[i][left] = rotated.get(idx++);
+            }
+        }
+
+        return grid;
+    }
+}
+```
+
+---
+
+# Python3 Solution
+
+```python
+from typing import List
+
+class Solution:
+    def rotateGrid(self, grid: List[List[int]], k: int) -> List[List[int]]:
+
+        m, n = len(grid), len(grid[0])
+
+        layers = min(m, n) // 2
+
+        for layer in range(layers):
+
+            top, left = layer, layer
+            bottom = m - layer - 1
+            right = n - layer - 1
+
+            arr = []
+
+            # top row
+            for j in range(left, right + 1):
+                arr.append(grid[top][j])
+
+            # right column
+            for i in range(top + 1, bottom):
+                arr.append(grid[i][right])
+
+            # bottom row
+            for j in range(right, left - 1, -1):
+                arr.append(grid[bottom][j])
+
+            # left column
+            for i in range(bottom - 1, top, -1):
+                arr.append(grid[i][left])
+
+            size = len(arr)
+
+            rot = k % size
+
+            rotated = arr[rot:] + arr[:rot]
+
+            idx = 0
+
+            # fill top row
+            for j in range(left, right + 1):
+                grid[top][j] = rotated[idx]
+                idx += 1
+
+            # fill right column
+            for i in range(top + 1, bottom):
+                grid[i][right] = rotated[idx]
+                idx += 1
+
+            # fill bottom row
+            for j in range(right, left - 1, -1):
+                grid[bottom][j] = rotated[idx]
+                idx += 1
+
+            # fill left column
+            for i in range(bottom - 1, top, -1):
+                grid[i][left] = rotated[idx]
+                idx += 1
+
+        return grid
+```
