@@ -1,0 +1,297 @@
+# 2784. Check if Array is Good
+
+## Problem Statement
+
+2784. Check if Array is Good
+
+You are given an integer array nums. We consider an array good if it is a permutation of an array base[n].
+base[n] = [1, 2, ..., n - 1, n, n] (in other words, it is an array of length n + 1 which contains 1 to n - 1 exactly once, 
+plus two occurrences of n). For example, base[1] = [1, 1] and base[3] = [1, 2, 3, 3].
+Return true if the given array is good, otherwise return false.
+Note: A permutation of integers represents an arrangement of these numbers.
+
+ 
+
+Example 1:
+Input: nums = [2, 1, 3]
+Output: false
+Explanation: Since the maximum element of the array is 3, the only candidate n for which this array could be a permutation of base[n], is n = 3. 
+However, base[3] has four elements but array nums has three. Therefore, it can not be a permutation of base[3] = [1, 2, 3, 3]. So the answer is false.
+
+Example 2:
+Input: nums = [1, 3, 3, 2]
+Output: true
+Explanation: Since the maximum element of the array is 3, the only candidate n for which this array could be a permutation of base[n], is n = 3. 
+It can be seen that nums is a permutation of base[3] = [1, 2, 3, 3] (by swapping the second and fourth elements in nums, we reach base[3]). Therefore, the answer is true.
+
+Example 3:
+Input: nums = [1, 1]
+Output: true
+Explanation: Since the maximum element of the array is 1, the only candidate n for which this array could be a permutation of base[n], is n = 1. 
+It can be seen that nums is a permutation of base[1] = [1, 1]. Therefore, the answer is true.
+
+Example 4:
+Input: nums = [3, 4, 4, 1, 2, 1]
+Output: false
+Explanation: Since the maximum element of the array is 4, the only candidate n for which this array could be a permutation of base[n], is n = 4.
+However, base[4] has five elements but array nums has six. Therefore, it can not be a permutation of base[4] = [1, 2, 3, 4, 4]. So the answer is false.
+ 
+
+Constraints:
+
+1 <= nums.length <= 100
+1 <= num[i] <= 200
+
+---
+
+# Approach 1 — Using Sorting
+
+## Idea
+
+1. Sort the array
+2. After sorting:
+
+   * Elements from index `0` to `n-1` should be:
+
+     ```text
+     1,2,3,...,n
+     ```
+   * Last element should again be `n`
+
+---
+
+## Time Complexity
+
+```text
+O(n log n)
+```
+
+## Space Complexity
+
+```text
+O(1)
+```
+
+---
+
+## Java Solution
+
+```java
+import java.util.Arrays;
+
+class Solution {
+    public boolean isGood(int[] nums) {
+        Arrays.sort(nums);
+
+        int n = nums.length - 1;
+
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != i + 1) {
+                return false;
+            }
+        }
+
+        return nums[n] == n;
+    }
+}
+```
+
+---
+
+## Python3 Solution
+
+```python
+class Solution:
+    def isGood(self, nums: List[int]) -> bool:
+        nums.sort()
+
+        n = len(nums) - 1
+
+        for i in range(n):
+            if nums[i] != i + 1:
+                return False
+
+        return nums[n] == n
+```
+
+---
+
+# Approach 2 — Using HashSet
+
+## Idea
+
+* Let:
+
+  ```text
+  target = len(nums) - 1
+  ```
+* The number `target` must appear exactly twice
+* All other numbers must appear exactly once
+
+Use:
+
+* `HashSet` / `set` for uniqueness checking
+* Counter for duplicate maximum value
+
+---
+
+## Time Complexity
+
+```text
+O(n)
+```
+
+## Space Complexity
+
+```text
+O(n)
+```
+
+---
+
+## Java Solution
+
+```java
+import java.util.HashSet;
+
+class Solution {
+    public boolean isGood(int[] nums) {
+        int n = nums.length;
+        int target = n - 1;
+
+        HashSet<Integer> set = new HashSet<>();
+        int count = 0;
+
+        for (int num : nums) {
+
+            if (num < 1 || num > target) {
+                return false;
+            }
+
+            if (num == target) {
+                count++;
+            } else {
+                if (set.contains(num)) {
+                    return false;
+                }
+                set.add(num);
+            }
+        }
+
+        return count == 2 && set.size() == target - 1;
+    }
+}
+```
+
+---
+
+## Python3 Solution
+
+```python
+class Solution:
+    def isGood(self, nums: List[int]) -> bool:
+        n = len(nums)
+        target = n - 1
+
+        seen = set()
+        count = 0
+
+        for num in nums:
+
+            if num < 1 or num > target:
+                return False
+
+            if num == target:
+                count += 1
+            else:
+                if num in seen:
+                    return False
+                seen.add(num)
+
+        return count == 2 and len(seen) == target - 1
+```
+
+---
+
+# Approach 3 — Using Frequency Array
+
+## Idea
+
+Use a counting array to store frequency of every number.
+
+Rules:
+
+* Numbers `1` to `n-2` should appear exactly once
+* Number `n-1` should appear exactly twice
+
+---
+
+## Time Complexity
+
+```text
+O(n)
+```
+
+## Space Complexity
+
+```text
+O(n)
+```
+
+---
+
+## Java Solution
+
+```java
+class Solution {
+    public boolean isGood(int[] nums) {
+        int n = nums.length;
+        int[] count = new int[n];
+
+        for (int a : nums) {
+            if (a >= n) return false;
+            count[a]++;
+        }
+
+        for (int i = 1; i <= n - 2; i++) {
+            if (count[i] != 1) {
+                return false;
+            }
+        }
+
+        return count[n - 1] == 2;
+    }
+}
+```
+
+---
+
+## Python3 Solution
+
+```python
+class Solution:
+    def isGood(self, nums: List[int]) -> bool:
+        n = len(nums)
+        count = [0] * n
+
+        for a in nums:
+            if a >= n:
+                return False
+            count[a] += 1
+
+        for i in range(1, n - 1):
+            if count[i] != 1:
+                return False
+
+        return count[n - 1] == 2
+```
+
+---
+
+# Comparison of Approaches
+
+| Approach        | Time Complexity | Space Complexity | Notes                      |
+| --------------- | --------------- | ---------------- | -------------------------- |
+| Sorting         | O(n log n)      | O(1)             | Simple and clean           |
+| HashSet         | O(n)            | O(n)             | Efficient uniqueness check |
+| Frequency Array | O(n)            | O(n)             | Best for small constraints |
